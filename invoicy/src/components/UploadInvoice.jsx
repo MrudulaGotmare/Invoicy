@@ -1,3 +1,5 @@
+// UploadInvoice.jsx
+
 import React, { useState } from 'react';
 import Split from 'react-split';
 import { useNavigate } from 'react-router-dom';
@@ -99,7 +101,7 @@ function UploadInvoice() {
                       Remove
                     </button>
                     <button
-                      className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                      className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700"
                       onClick={handleProcess}
                     >
                       Process
