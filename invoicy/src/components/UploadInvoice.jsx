@@ -1,5 +1,3 @@
-// UploadInvoice.jsx
-
 import React, { useState } from 'react';
 import Split from 'react-split';
 import { useNavigate } from 'react-router-dom';
@@ -9,8 +7,10 @@ import ImagePreview from './ImagePreview';
 function UploadInvoice() {
   const [file, setFile] = useState(null);
   const [previewFiles, setPreviewFiles] = useState([]);
+  const [processing, setProcessing] = useState(false); // State to track processing status
   const navigate = useNavigate();
 
+  // Function to handle file selection
   const handleFileChange = async (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
@@ -25,19 +25,35 @@ function UploadInvoice() {
         },
         withCredentials: true,
       });
-      setPreviewFiles(response.data.files);
+      setPreviewFiles(response.data.files); // Set preview files received from the backend
     } catch (error) {
       console.error('Error uploading file:', error);
     }
   };
 
+  // Function to handle removing selected file
   const handleRemove = () => {
     setFile(null);
     setPreviewFiles([]);
   };
 
-  const handleProcess = () => {
-    alert('Processing file: ' + file.name);
+  // Function to handle processing the selected file
+  const handleProcess = async () => {
+    if (!file) return; // Ensure a file is selected
+
+    setProcessing(true); // Set processing status to true
+
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/processInvoice', { filename: file.name }, {
+        withCredentials: true,
+      });
+      console.log('Processing response:', response.data);
+      // Handle success response as per application logic
+    } catch (error) {
+      console.error('Error processing file:', error);
+    } finally {
+      setProcessing(false); // Reset processing status after completion
+    }
   };
 
   return (
@@ -83,7 +99,8 @@ function UploadInvoice() {
               >
                 <span className="text-gray-500">Drag and drop invoice file</span>
                 <button className="px-4 py-2 mt-4 text-white bg-gray-800 rounded-md hover:bg-gray-700" onClick={() => document.getElementById('file-upload').click()}>
-                  Browse</button>
+                  Browse
+                </button>
               </label>
             </div>
             {file && (
@@ -97,14 +114,16 @@ function UploadInvoice() {
                     <button
                       className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
                       onClick={handleRemove}
+                      disabled={processing} // Disable remove button during processing
                     >
                       Remove
                     </button>
                     <button
-                      className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700"
+                      className={`px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700 ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={handleProcess}
+                      disabled={processing} // Disable process button during processing
                     >
-                      Process
+                      {processing ? 'Processing...' : 'Process'}
                     </button>
                   </div>
                 </div>

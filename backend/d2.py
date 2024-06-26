@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 from PIL import Image, ImageDraw, ImageFont
 from openai import OpenAI
 from paddleocr import PaddleOCR
@@ -79,13 +80,13 @@ def extract_text_from_image(image_path, output_folder="annotated_images"):
 
     # Save the extracted text with bounding box information to a file
     extracted_text = []
-    with open("extracted_data.txt", "w") as f:
+    with open(os.path.join(output_folder, "extracted_data.txt"), "w") as f:
         for box, text, score in zip(boxes, txts, scores):
             f.write(f"Box: {box}, Text: {text}, Confidence: {score}\n")
             extracted_text.append(f"{text} ({score:.2f})")
 
     # Save the extracted text without bounding box information to a separate file
-    with open("extracted_text.txt", "w") as f:
+    with open(os.path.join(output_folder, "extracted_text.txt"), "w") as f:
         for text, score in zip(txts, scores):
             f.write(f"Text: {text}, Confidence: {score}\n")
 
@@ -176,16 +177,6 @@ def process_text(text: str, invoice_schema: dict) -> dict:
                 "completion_tokens": 0
             }
         }
-# Function to calculate cost based on token usage
-def calculate_cost(usage: dict) -> float:
-    input_cost_per_token = 0.50 / 1_000_000  # $0.50 per 1 million tokens
-    output_cost_per_token = 1.50 / 1_000_000  # $1.50 per 1 million tokens
-
-    input_tokens = usage["prompt_tokens"]
-    output_tokens = usage["completion_tokens"]
-
-    total_cost = (input_tokens * input_cost_per_token) + (output_tokens * output_cost_per_token)
-    return total_cost
 
 # Function to convert USD to INR
 def usd_to_inr(amount_usd: float) -> float:
@@ -205,9 +196,8 @@ def pdf_to_images(pdf_path, output_folder="pdf_images"):
         image.save(image_path, 'JPEG')
         image_paths.append(image_path)
     return image_paths
-from reportlab.platypus import Paragraph, PageBreak
-from reportlab.lib.styles import getSampleStyleSheet
 
+# Function to process invoice images and generate a final report PDF
 def process_invoice_images(folder_path, output_folder="annotated_images", final_pdf_path="final_report.pdf"):
     # Ensure the folder path exists
     if not os.path.exists(folder_path):
@@ -219,79 +209,83 @@ def process_invoice_images(folder_path, output_folder="annotated_images", final_
         if f.lower().endswith('.jpg') or f.lower().endswith('.png') or f.lower().endswith('.pdf')
     ]
 
-    # Create a canvas object for the final PDF
-    c = canvas.Canvas(final_pdf_path, pagesize=letter)
+    # Convert PDFs to images
+    pdf_files = [f for f in files if f.lower().endswith('.pdf')]
+    for pdf_file in pdf_files:
+        pdf_images = pdf_to_images(pdf_file, output_folder=output_folder)
+        files.remove(pdf_file)
+        files.extend(pdf_images)
 
-    # Process each file
-    for file_path in files:
-        print(f"Processing file: {file_path}")
+    # Process each image file
+    extraction_results = []
+    for file in files:
+        if file.lower().endswith('.jpg') or file.lower().endswith('.png'):
+            try:
+                extracted_text, annotated_image_path, avg_confidence = extract_text_from_image(file, output_folder=output_folder)
+                structured_data = process_text(extracted_text, invoice_schema)
+                extraction_results.append({
+                    "file_name": os.path.basename(file),
+                    "extracted_text": extracted_text,
+                    "annotated_image_path": annotated_image_path,
+                    "structured_data": structured_data,
+                    "avg_confidence": avg_confidence
+                })
+            except Exception as e:
+                print(f"Error processing {file}: {e}")
 
-        # Initialize pdf_images list
-        pdf_images = []
+    # Generate a final report PDF
+    if extraction_results:
+        c = canvas.Canvas(final_pdf_path, pagesize=letter)
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(100, 750, "Invoice Extraction Report")
+        c.setFont("Helvetica", 12)
 
-        # Convert PDF to images if the file is a PDF
-        if file_path.lower().endswith('.pdf'):
-            pdf_images = pdf_to_images(file_path)
+        y_position = 700
+        for result in extraction_results:
+            c.drawString(100, y_position, f"File Name: {result['file_name']}")
+            c.drawString(100, y_position - 15, f"Average Confidence: {result['avg_confidence']:.2f}")
+            c.drawString(100, y_position - 30, "Extracted Text:")
+            lines = result['extracted_text'].split('\n')
+            y_position -= 45
+            for line in lines:
+                c.drawString(120, y_position, line)
+                y_position -= 15
+            c.drawString(100, y_position, "Structured Data (JSON):")
+            json_text = json.dumps(result['structured_data'], indent=2)
+            json_lines = json_text.split('\n')
+            y_position -= 30
+            for json_line in json_lines:
+                c.drawString(120, y_position, json_line)
+                y_position -= 15
+            c.showPage()
+            y_position = 750
+        c.save()
+
+        return final_pdf_path
+
+    return None
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python d2.py <image_path or folder_path>")
+        sys.exit(1)
+
+    input_path = sys.argv[1]
+    if os.path.isdir(input_path):
+        final_report_pdf = process_invoice_images(input_path)
+        if final_report_pdf:
+            print(f"Final report PDF generated: {final_report_pdf}")
         else:
-            pdf_images = [file_path]
-
-        for image_path in pdf_images:
-            print(f"Processing image: {image_path}")
-            extracted_text, annotated_image_path, avg_confidence = extract_text_from_image(image_path, output_folder=output_folder)
-
-            # Check if the annotated image was saved correctly
-            if not os.path.exists(annotated_image_path):
-                print(f"Error: Annotated image not found at {annotated_image_path}")
-                continue
-
-            # Process extracted text with OpenAI
-            result = process_text(extracted_text, invoice_schema)
-            response_content = result["response_content"]
-
-            # Print or save the response as needed
-            print("Extracted Text:")
-            print(extracted_text)
-
-            print("\nResponse from OpenAI:")
-            print(response_content)
-
-            # Print average confidence
-            print(f"\nAverage Confidence: {avg_confidence:.2f}")
-
-            # Add annotated image to the PDF (fit to full page)
-            c.drawImage(annotated_image_path, 0, 0, width=c._pagesize[0], height=c._pagesize[1])
-            c.showPage()  # Add a new page for the annotated image
-
-            # Add response from OpenAI to the PDF
-            styles = getSampleStyleSheet()
-            style = styles["Normal"]
-            style.fontName = 'Helvetica'
-            style.leading = 7  # Adjust leading for better readability
-
-            # Split response content into lines
-            response_lines = response_content.split('\n')
-
-            # Add the response lines as paragraphs, handling page breaks
-            c.drawString(50, c._pagesize[1] - 50, "Response from OpenAI:")
-            y_position = c._pagesize[1] - 100  # Starting y position for text
-
-            for line in response_lines:
-                response_paragraph = Paragraph(line, style)
-                response_paragraph.wrap(c._pagesize[0] - 100, c._pagesize[1] - 100)
-
-                # Check if the paragraph fits on the current page
-                if y_position - response_paragraph.height < 100:
-                    c.showPage()  # Add a new page if the paragraph does not fit
-                    y_position = c._pagesize[1] - 100  # Reset y position
-
-                response_paragraph.drawOn(c, 50, y_position)
-                y_position -= response_paragraph.height + style.leading
-
-            c.showPage()  # Add a new page for the next invoice
-
-    # Save the final PDF
-    c.save()
-# Example usage
-folder_path = "vert1"
-output_folder = "annotated_images"
-process_invoice_images(folder_path, output_folder, "final_report.pdf")
+            print("Error generating final report PDF.")
+    elif os.path.isfile(input_path):
+        try:
+            extracted_text, annotated_image_path, avg_confidence = extract_text_from_image(input_path)
+            structured_data = process_text(extracted_text, invoice_schema)
+            print(f"Extracted Text: {extracted_text}")
+            print(f"Structured Data (JSON):\n{json.dumps(structured_data, indent=2)}")
+            print(f"Average Confidence: {avg_confidence:.2f}")
+        except Exception as e:
+            print(f"Error processing {input_path}: {e}")
+    else:
+        print(f"Invalid input path: {input_path}")
+        sys.exit(1)
