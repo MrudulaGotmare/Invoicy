@@ -1,0 +1,201 @@
+{
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "title": "Invoice",
+  "description": "A comprehensive invoice format",
+  "type": "object",
+  "properties": {
+    "buyerName": {
+      "description": "Name of the buyer.",
+      "type": "string"
+    },
+    "documentType": {
+      "description": "Type of the document.",
+      "type": "string"
+    },
+    "paymentTerms": {
+      "description": "Terms of payment for the invoice.",
+      "type": "string"
+    },
+    "invoiceDate": {
+      "description": "The date when the invoice was issued.",
+      "type": "string",
+      "pattern": "^\\d{2}/\\d{2}/\\d{4}$"
+    },
+    "invoiceNumber": {
+      "description": "The unique identifier for the invoice.",
+      "type": "string"
+    },
+    "irnNumber": {
+      "description": "Invoice Reference Number.",
+      "type": "string"
+    },
+    "poNumber": {
+      "description": "Purchase Order Number.",
+      "type": "string"
+    },
+    "sellerName": {
+      "description": "Name of the seller.",
+      "type": "string"
+    },
+    "shippingAddress": {
+      "description": "Address where the items are to be shipped.",
+      "type": "string"
+    },
+    "shippingGstin": {
+      "description": "GSTIN of the shipping address.",
+      "type": "string"
+    },
+    "shippingToLegalName": {
+      "description": "Legal name of the shipping recipient.",
+      "type": "string"
+    },
+    "cgst": {
+      "description": "Central Goods and Services Tax.",
+      "type": "number"
+    },
+    "igst": {
+      "description": "Integrated Goods and Services Tax.",
+      "type": "number"
+    },
+    "invoiceTotalAmount": {
+      "description": "Total amount of the invoice.",
+      "type": "number"
+    },
+    "totalAmountPreTax": {
+      "description": "Total amount of all items before tax.",
+      "type": "number"
+    },
+    "paymentDueDate": {
+      "description": "The date by which the invoice should be paid.",
+      "type": "string",
+      "format": "date"
+    },
+    "preTaxTotal": {
+      "description": "Pre-tax or total amount without tax value (subtotal).",
+      "type": "number"
+    },
+    "roundOff": {
+      "description": "Round off amount.",
+      "type": "number"
+    },
+    "sgst": {
+      "description": "State Goods and Services Tax.",
+      "type": "number"
+    },
+    "ugst": {
+      "description": "Union Territory Goods and Services Tax.",
+      "type": "number"
+    },
+    "tcs": {
+      "description": "Tax Collected at Source.",
+      "type": "number"
+    },
+    "totalTax": {
+      "description": "Total tax amount.",
+      "type": "number"
+    },
+    "discount": {
+      "description": "Discount applied to the invoice.",
+      "type": "number"
+    },
+    "currency": {
+      "description": "Currency of the invoice.",
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "description": "List of items included in the invoice.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "hsnOrSacCode": {
+            "type": "string"
+          },
+          "unitOfMeasurement": {
+            "type": "string"
+          },
+          "pricePerUnit": {
+            "type": "number"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "itemLevelGst": {
+            "type": "number"
+          },
+          "itemLevelDiscount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "description",
+          "quantity",
+          "unitOfMeasurement",
+          "pricePerUnit",
+          "amount"
+        ]
+      }
+    },
+    "hsnOrSacCodesWithItemNames": {
+      "description": "HSN or SAC codes with corresponding item names.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "itemName": {
+            "type": "string"
+          },
+          "hsnOrSacCode": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "itemName",
+          "hsnOrSacCode"
+        ]
+      }
+    },
+    "billPeriod": {
+      "description": "Billing period if mentioned.",
+      "type": "string"
+    },
+    "accountNumber": {
+      "description": "Bank account number.",
+      "type": "string"
+    },
+    "ifscCode": {
+      "description": "IFSC code of the bank.",
+      "type": "string"
+    },
+    "bank": {
+      "description": "Name of the bank.",
+      "type": "string"
+    },
+    "swiftCode": {
+      "description": "SWIFT code for international transactions.",
+      "type": "string"
+    },
+    "branch": {
+      "description": "Branch of the bank.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "buyerName",
+    "invoiceNumber",
+    "invoiceDate",
+    "sellerName",
+    "shippingAddress",
+    "invoiceTotalAmount",
+    "totalAmountPreTax",
+    "paymentDueDate",
+    "currency",
+    "items"
+  ]
+}
