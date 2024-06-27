@@ -1,10 +1,11 @@
 // Invoice.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Split from 'react-split';
 import UIOutput from './UIOutput';
 import JSONOutput from './JSONOutput';
 import ImagePreview from './ImagePreview';
+import xangarsLogo from '../../public/images/xangars_logo.png'; // Replace with actual path
 
 function Invoice() {
   const [view, setView] = useState('JSON');
@@ -12,11 +13,39 @@ function Invoice() {
   const invoiceData = location.state?.invoiceData || [];
   const previewFiles = location.state?.previewFiles || [];
 
-  // Extract and parse the structured data, token usage, and avg confidence from each invoice
-  // It is used for single image
+  // State to hold the file extension
+  const [fileExtension, setFileExtension] = useState('');
+
+  useEffect(() => {
+    // Function to extract file extension from URL
+    const getFileExtension = (url) => {
+      const lastDotIndex = url.lastIndexOf('.');
+      if (lastDotIndex === -1) return ''; // No extension found
+      return url.slice(lastDotIndex + 1);
+    };
+
+    // Extract file extension from the first preview file URL
+    if (previewFiles.length > 0) {
+      const firstPreviewFile = previewFiles[0];
+      const extension = getFileExtension(firstPreviewFile);
+      setFileExtension(extension);
+    }
+  }, [previewFiles]);
+
+  // Determine if the file is PDF or single image based on file extension
+  const isPDF = fileExtension === 'pdf';
+  const isSingleImage = fileExtension.startsWith('image/');
+
+  // Extract and parse the structured data based on file type
   const structuredData = invoiceData.map(data => {
     let parsedData = {};
-    if (data && data.response_content) {
+    if (isPDF && data.structured_data && data.structured_data.response_content) {
+      try {
+        parsedData = JSON.parse(data.structured_data.response_content);
+      } catch (error) {
+        console.error('Error parsing structured data:', error);
+      }
+    } else if (isSingleImage && data && data.response_content) {
       try {
         parsedData = JSON.parse(data.response_content);
       } catch (error) {
@@ -30,23 +59,7 @@ function Invoice() {
     };
   });
 
-  // // it is used when pdf is been uploaded
-  // const structuredData = invoiceData.map(data => {
-  //   let parsedData = {};
-  //   if (data.structured_data && data.structured_data.response_content) {
-  //     try {
-  //       parsedData = JSON.parse(data.structured_data.response_content);
-  //     } catch (error) {
-  //       console.error('Error parsing structured data:', error);
-  //     }
-  //   }
-  //   return {
-  //     ...parsedData,
-  //     token_usage: data.structured_data?.token_usage || {},
-  //     avg_confidence: data.avg_confidence || 0
-  //   };
-  // });
-
+  // Log the structured data for debugging purposes
   console.log("structured data is:", structuredData);
 
   // Log the invoiceData and previewFiles to ensure they have the expected values
@@ -57,7 +70,7 @@ function Invoice() {
     <div className="min-h-screen bg-gray-100">
       <header className="w-full py-4 bg-white shadow">
         <nav className="flex justify-between items-center w-full max-w-6xl mx-auto">
-          <div className="text-red-500 text-3xl font-bold">Xangars</div>
+          <img src={xangarsLogo} alt="Xangars Logo" className="h-10" />
           <div className="flex items-center space-x-6">
             <a href="/" className="font-bold hover:text-gray-500">Home</a>
             <a href="#" className="font-bold hover:text-gray-500">Services</a>

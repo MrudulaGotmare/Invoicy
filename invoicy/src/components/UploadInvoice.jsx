@@ -8,6 +8,8 @@ import { Tooltip } from 'react-tooltip';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import xangarsLogo from '../../public/images/xangars_logo.png'; // Replace with actual path
+
 
 const BulkProcessingToggle = ({ bulkMode, setBulkMode }) => {
   const handleToggle = () => {
@@ -32,8 +34,8 @@ const BulkProcessingToggle = ({ bulkMode, setBulkMode }) => {
       <label htmlFor="bulk-processing" className="text-sm font-medium text-gray-700">
         Bulk Processing
       </label>
-      <span 
-        data-tooltip-id="bulk-tooltip" 
+      <span
+        data-tooltip-id="bulk-tooltip"
         data-tooltip-content="Enable to process multiple invoices at once"
         className="text-gray-400 hover:text-gray-600 cursor-help transition-colors duration-200"
       >
@@ -55,17 +57,17 @@ function UploadInvoice() {
 
   const handleFileChange = async (event) => {
     const selectedFiles = Array.from(event.target.files);
-    
+
     if (!bulkMode) {
       // If bulk mode is off, only keep the last selected file
       setFiles([selectedFiles[selectedFiles.length - 1]]);
       setPreviewFiles([]);  // Clear previous preview files
-      
+
       // Process only the single selected file
       const file = selectedFiles[selectedFiles.length - 1];
       const formData = new FormData();
       formData.append('file', file);
-  
+
       try {
         const response = await axios.post('http://127.0.0.1:5000/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
@@ -79,11 +81,11 @@ function UploadInvoice() {
     } else {
       // Bulk mode: keep existing behavior
       setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
-  
+
       for (const file of selectedFiles) {
         const formData = new FormData();
         formData.append('file', file);
-  
+
         try {
           const response = await axios.post('http://127.0.0.1:5000/upload', formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
@@ -98,7 +100,6 @@ function UploadInvoice() {
     }
   };
 
-
   const handleRemove = (index) => {
     setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
     setPreviewFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
@@ -106,10 +107,10 @@ function UploadInvoice() {
 
   const handleProcess = async () => {
     if (files.length === 0) return;
-  
+
     setProcessing(true);
     console.log('Processing started...');
-  
+
     try {
       const responses = await Promise.all(files.map(file =>
         axios.post('http://127.0.0.1:5000/processInvoice', { fileName: file.name }, {
@@ -120,17 +121,17 @@ function UploadInvoice() {
 
       console.log("files given", previewFiles);
 
-  
+
       const processedData = responses.map(response => response.data);
       console.log('Processing responses:', processedData);
-  
+
       // Extract image URLs from the processed data
       // const imageUrls = processedData.flatMap(data => data.imageUrls || []);
       // console.log('Image URLs:', imageUrls);
-  
+
       // Debugging statement before navigation
       // console.log('Navigating to /invoice with data:', { invoiceData: processedData, previewFiles: imageUrls, bulkMode });
-  
+
       // Navigate to /invoice with processed data
       navigate('/invoice', { state: { invoiceData: processedData, previewFiles: previewFiles, bulkMode } });
     } catch (error) {
@@ -145,7 +146,7 @@ function UploadInvoice() {
     <div className="flex flex-col min-h-screen bg-gray-100">
       <header className="w-full py-4 bg-white shadow">
         <nav className="flex justify-between items-center w-full max-w-screen-xl mx-auto">
-          <div className="text-red-500 text-3xl font-bold">Xangars</div>
+          <img src={xangarsLogo} alt="Xangars Logo" className="h-10" />
           <div className="flex items-center space-x-6">
             <a href="/" className="hover:text-gray-500">Home</a>
             <a href="#" className="font-bold hover:text-gray-500">Services</a>
@@ -172,7 +173,7 @@ function UploadInvoice() {
             <h1 className="mb-8 text-2xl font-bold">Upload invoice</h1>
             <div className="w-full mb-4 flex justify-between items-center">
               <div className="flex items-center">
-              {/* <BulkProcessingToggle bulkMode={bulkMode} setBulkMode={setBulkMode} /> */}
+                {/* <BulkProcessingToggle bulkMode={bulkMode} setBulkMode={setBulkMode} /> */}
               </div>
             </div>
             <div className="w-full p-4 border-2 border-dashed rounded-md border-gray-300">
