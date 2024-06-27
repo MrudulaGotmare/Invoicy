@@ -1,30 +1,310 @@
-//UIOutput.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-function UIOutput() {
+function UIOutput({ invoiceData = {} }) {
+  const [isEditing, setIsEditing] = useState(false); // State to track edit mode
+  const [editedData, setEditedData] = useState({}); // State to store edited data
+  const [currentInvoiceData, setCurrentInvoiceData] = useState({}); // State to hold current invoice data
+
+  useEffect(() => {
+    // Set current invoice data when invoiceData prop changes
+    setCurrentInvoiceData(invoiceData[0] || {});
+  }, [invoiceData]);
+
+  // Function to handle input changes and update editedData
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setEditedData({
+      ...editedData,
+      [name]: value
+    });
+  };
+
+  // Function to toggle edit mode
+  const toggleEditMode = () => {
+    setIsEditing(!isEditing);
+  };
+
+  // Function to save changes
+  const saveChanges = () => {
+    // Merge editedData into currentInvoiceData
+    const updatedInvoiceData = {
+      ...currentInvoiceData,
+      ...editedData
+    };
+
+    // Perform logic to save updatedInvoiceData (e.g., API call, state update)
+    console.log('Saving changes:', updatedInvoiceData);
+    // Example: Update invoiceData state or perform API call to save changes
+    // updateInvoiceData(updatedInvoiceData);
+    setCurrentInvoiceData(updatedInvoiceData); // Update currentInvoiceData state
+    setIsEditing(false); // Exit edit mode after saving
+  };
+
   return (
     <>
       <div className="flex justify-between w-full mb-8">
-        {/* <h1 className="text-3xl font-bold">Invoice #12345</h1>
-        <div className="flex space-x-4">
-          <button className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-300 flex items-center">
-            UI
-          </button>
-          <button className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-300 flex items-center">
-            JSON
-          </button>
-        </div> */}
+        <h1 className="text-3xl font-bold">{currentInvoiceData.invoiceNumber}</h1>
       </div>
       <div className="w-full mb-8">
         <h2 className="text-xl font-semibold">Details</h2>
-        <form className="flex flex-col space-y-4 mt-4">
-          <input type="text" placeholder="Date" className="p-2 border border-gray-300 rounded-md" />
-          <input type="text" placeholder="Due Date" className="p-2 border border-gray-300 rounded-md" />
-          <input type="text" placeholder="Status" className="p-2 border border-gray-300 rounded-md" />
-          <input type="text" placeholder="Sent to" className="p-2 border border-gray-300 rounded-md" />
-          <input type="text" placeholder="Paid" className="p-2 border border-gray-300 rounded-md" />
+        <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          <div>
+            <label className="block mb-1 font-medium">Buyer Name</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              name="buyerName"
+              value={isEditing ? (editedData.buyerName || currentInvoiceData.buyerName) : currentInvoiceData.buyerName}
+              readOnly={!isEditing} // Toggle readOnly based on isEditing state
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Document Type</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={documentType}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Payment Terms</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={paymentTerms}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Invoice Date</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={invoiceDate}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Payment Due Date</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={paymentDueDate}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">PO Number</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={poNumber}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Seller Name</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={sellerName}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Shipping Address</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={shippingAddress}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Shipping GSTIN</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={shippingGstin}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Shipping To Legal Name</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={shippingToLegalName}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">CGST</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={cgst}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">IGST</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={igst}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Invoice Total Amount</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={invoiceTotalAmount}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Total Amount Pre Tax</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={totalAmountPreTax}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Pre Tax Total</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={preTaxTotal}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Round Off</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={roundOff}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">SGST</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={sgst}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">UGST</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={ugst}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">TCS</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={tcs}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Total Tax</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={totalTax}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Discount</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={discount}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Currency</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={currency}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Bill Period</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={billPeriod}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Account Number</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={accountNumber}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">IFSC Code</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={ifscCode}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Bank</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={bank}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">SWIFT Code</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={swiftCode}
+              readOnly
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Branch</label>
+            <input
+              type="text"
+              className="p-2 border border-gray-300 rounded-md w-full"
+              value={branch}
+              readOnly
+            />
+          </div>
         </form>
       </div>
+
       <div className="w-full mb-8">
         <h2 className="text-xl font-semibold">Items</h2>
         <table className="w-full mt-4 border border-gray-300 rounded-md">
@@ -37,36 +317,14 @@ function UIOutput() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td className="p-2 border border-gray-300">Design</td>
-              <td className="p-2 border border-gray-300">1</td>
-              <td className="p-2 border border-gray-300">$300.00</td>
-              <td className="p-2 border border-gray-300">$300.00</td>
-            </tr>
-            <tr>
-              <td className="p-2 border border-gray-300">Copywriting</td>
-              <td className="p-2 border border-gray-300">2</td>
-              <td className="p-2 border border-gray-300">$200.00</td>
-              <td className="p-2 border border-gray-300">$400.00</td>
-            </tr>
-            <tr>
-              <td className="p-2 border border-gray-300">Web Development</td>
-              <td className="p-2 border border-gray-300">1</td>
-              <td className="p-2 border border-gray-300">$500.00</td>
-              <td className="p-2 border border-gray-300">$500.00</td>
-            </tr>
-            <tr>
-              <td className="p-2 border border-gray-300">Illustration</td>
-              <td className="p-2 border border-gray-300">3</td>
-              <td className="p-2 border border-gray-300">$100.00</td>
-              <td className="p-2 border border-gray-300">$300.00</td>
-            </tr>
-            <tr>
-              <td className="p-2 border border-gray-300">Motion Graphics</td>
-              <td className="p-2 border border-gray-300">1</td>
-              <td className="p-2 border border-gray-300">$400.00</td>
-              <td className="p-2 border border-gray-300">$400.00</td>
-            </tr>
+            {items.map((item, index) => (
+              <tr key={index}>
+                <td className="p-2 border border-gray-300">{item.description}</td>
+                <td className="p-2 border border-gray-300">{item.quantity}</td>
+                <td className="p-2 border border-gray-300">${item.pricePerUnit.toFixed(2)}</td>
+                <td className="p-2 border border-gray-300">${(item.quantity * item.pricePerUnit).toFixed(2)}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
@@ -74,26 +332,45 @@ function UIOutput() {
         <h2 className="text-xl font-semibold">Invoice Summary</h2>
         <div className="flex flex-col space-y-2 mt-4">
           <div className="flex justify-between">
-            <span>Subtotal</span>
-            <span>$2,000.00</span>
-          </div>
-          <div className="flex justify-between">
             <span>Discount</span>
-            <span>-$200.00</span>
+            <span>-${discount.toFixed(2)}</span>
           </div>
           <div className="flex justify-between">
-            <span>Tax</span>
-            <span>$120.00</span>
+            <span>Total Tax</span>
+            <span>${totalTax.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between font-bold">
-            <span>Total</span>
-            <span>$1,920.00</span>
+          <div className="flex justify-between">
+            <span>Total Amount Pre Tax</span>
+            <span>${totalAmountPreTax.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Invoice Total Amount</span>
+            <span>${invoiceTotalAmount.toFixed(2)}</span>
           </div>
         </div>
       </div>
       <div className="flex space-x-4">
-        <button className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">Export to CSV</button>
-        <button className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">Send Invoice</button>
+        {isEditing ? (
+          <button
+            className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700"
+            onClick={saveChanges}
+          >
+            Save Changes
+          </button>
+        ) : (
+          <button
+            className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700"
+            onClick={toggleEditMode}
+          >
+            Edit
+          </button>
+        )}
+        <button className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700">
+          Export to CSV
+        </button>
+        <button className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700">
+          Send Invoice
+        </button>
       </div>
     </>
   );

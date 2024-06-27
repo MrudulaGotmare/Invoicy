@@ -3,13 +3,16 @@ import { useLocation } from 'react-router-dom';
 import Split from 'react-split';
 import UIOutput from './UIOutput';
 import JSONOutput from './JSONOutput';
-import ImagePreview from './ImagePreview'; 
+import ImagePreview from './ImagePreview';
 
 function Invoice() {
   const [view, setView] = useState('JSON');
   const location = useLocation();
-  const invoiceData = location.state?.invoiceData;
+  const invoiceData = location.state?.invoiceData || {};
   const previewFiles = location.state?.previewFiles;
+
+  // Log the invoiceData to ensure it has the expected values
+  console.log('Invoice Data:', invoiceData);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -40,7 +43,7 @@ function Invoice() {
         >
           <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md">
             <div className="flex justify-between w-full mb-8">
-              <h1 className="text-3xl font-bold">Invoice #12345</h1>
+              <h1 className="text-3xl font-bold">{invoiceData.file_name}</h1>
               <div className="flex space-x-4">
                 <button
                   className={`px-4 py-2 text-gray-700 rounded-md flex items-center ${view === 'UI' ? 'bg-gray-300' : 'bg-gray-100 hover:bg-gray-300'}`}
@@ -56,11 +59,9 @@ function Invoice() {
                 </button>
               </div>
             </div>
-            {view === 'UI' ? <UIOutput /> : <JSONOutput invoiceData={invoiceData} />}
+            {view === 'UI' ? <UIOutput invoiceData={invoiceData} /> : <JSONOutput invoiceData={invoiceData} />}
           </div>
-          {/* <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md font-bold text-2xl"> */}
           <ImagePreview files={previewFiles} />
-          {/* </div> */}
         </Split>
       </div>
     </div>
