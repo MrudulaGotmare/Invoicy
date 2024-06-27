@@ -25,6 +25,7 @@ function UploadInvoice() {
         },
         withCredentials: true,
       });
+      console.log('Server response:', response.data);
       setPreviewFiles(response.data.files); // Set preview files received from the backend
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -52,6 +53,7 @@ const handleProcess = async () => {
     });
 
     console.log('Processing response:', response.data);
+    navigate('/invoice', { state: { invoiceData: response.data,  previewFiles: previewFiles  } });
     // Handle success response as per application logic
   } catch (error) {
     console.error('Error processing file:', error);

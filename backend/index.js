@@ -60,13 +60,15 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     try {
       await convert(filePath, options);
-      const files = fs.readdirSync(outputDir).map(file => `http://127.0.0.1:5000/uploads/${path.basename(file.filename, '.pdf')}/${file}`);
+      const files = fs.readdirSync(outputDir).map(file => `http://127.0.0.1:5000/uploads/${path.basename(req.file.filename, '.pdf')}/${file}`);
+      // console.log('Converted PDF pages:', files);
       res.json({ files });
     } catch (error) {
       console.error('Error converting PDF:', error);
       res.status(500).send('Error converting PDF');
     }
   } else {
+    console.log('Non-PDF file:', file.filename);
     res.json({ files: [`http://127.0.0.1:5000/uploads/${file.filename}`] });
   }
 });

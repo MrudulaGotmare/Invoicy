@@ -3,11 +3,22 @@
 import React, { useEffect, useState } from 'react';
 
 const ImagePreview = ({ files }) => {
+  console.log('Files received in ImagePreview:', files);
+  // ... rest of the component
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    console.log('Number of files:', files.length);
+    console.log('Number of files:', files?.length || 0);
   }, [files]);
+
+  // Check if files is undefined or empty
+  if (!files || files.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md">
+        <p>No preview available</p>
+      </div>
+    );
+  }
 
   const handleNext = () => {
     if (currentIndex < files.length - 1) {
@@ -23,14 +34,12 @@ const ImagePreview = ({ files }) => {
 
   return (
     <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md">
-      {files.length > 0 && (
-        <img
-          src={files[currentIndex]}
-          alt={`preview-${currentIndex}`}
-          className="w-full h-auto"
-          style={{ maxWidth: '1200px', maxHeight: '1200px', objectFit: 'cover' }}
-        />
-      )}
+      <img
+        src={files[currentIndex]}
+        alt={`preview-${currentIndex}`}
+        className="w-full h-auto"
+        style={{ maxWidth: '1200px', maxHeight: '1200px', objectFit: 'cover' }}
+      />
       {files.length > 1 && (
         <div className="flex justify-between items-center mt-4 space-x-4">
           <button
