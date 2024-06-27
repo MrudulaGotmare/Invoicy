@@ -3,64 +3,63 @@ import Split from 'react-split';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ImagePreview from './ImagePreview';
+import { Tooltip } from 'react-tooltip';
 
 function UploadInvoice() {
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [previewFiles, setPreviewFiles] = useState([]);
-  const [processing, setProcessing] = useState(false); // State to track processing status
+  const [processing, setProcessing] = useState(false);
+  const [bulkMode, setBulkMode] = useState(false);
   const navigate = useNavigate();
 
-  // Function to handle file selection
   const handleFileChange = async (event) => {
-    const selectedFile = event.target.files[0];
-    setFile(selectedFile);
+    const selectedFiles = Array.from(event.target.files);
+    setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
 
-    const formData = new FormData();
-    formData.append('file', selectedFile); // Append selected file to FormData
+    for (const file of selectedFiles) {
+      const formData = new FormData();
+      formData.append('file', file);
 
-    try {
-      const response = await axios.post('http://127.0.0.1:5000/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        withCredentials: true,
-      });
-      console.log('Server response:', response.data);
-      setPreviewFiles(response.data.files); // Set preview files received from the backend
-    } catch (error) {
-      console.error('Error uploading file:', error);
+      try {
+        const response = await axios.post('http://127.0.0.1:5000/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true,
+        });
+        console.log('Server response:', response.data);
+        setPreviewFiles(prevFiles => [...prevFiles, ...response.data.files]);
+      } catch (error) {
+        console.error('Error uploading file:', error);
+      }
     }
   };
 
-  // Function to handle removing selected file
-  const handleRemove = () => {
-    setFile(null);
-    setPreviewFiles([]);
+  const handleRemove = (index) => {
+    setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    setPreviewFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
   };
 
- // Function to handle processing the selected file
-const handleProcess = async () => {
-  if (!file) return; // Ensure a file is selected
+  const handleProcess = async () => {
+    if (files.length === 0) return;
 
-  setProcessing(true); // Set processing status to true
+    setProcessing(true);
 
-  try {
-    const response = await axios.post('http://127.0.0.1:5000/processInvoice', { fileName: file.name }, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      withCredentials: true,
-    });
+    try {
+      const responses = await Promise.all(files.map(file => 
+        axios.post('http://127.0.0.1:5000/processInvoice', { fileName: file.name }, {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        })
+      ));
 
-    console.log('Processing response:', response.data);
-    navigate('/invoice', { state: { invoiceData: response.data,  previewFiles: previewFiles  } });
-    // Handle success response as per application logic
-  } catch (error) {
-    console.error('Error processing file:', error);
-  } finally {
-    setProcessing(false); // Reset processing status after completion
-  }
-};
+      const processedData = responses.map(response => response.data);
+      console.log('Processing responses:', processedData);
+      navigate('/invoice', { state: { invoiceData: processedData, previewFiles, bulkMode } });
+    } catch (error) {
+      console.error('Error processing files:', error);
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -91,6 +90,26 @@ const handleProcess = async () => {
         >
           <main className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md">
             <h1 className="mb-8 text-2xl font-bold">Upload invoice</h1>
+            <div className="w-full mb-4 flex justify-between items-center">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="bulk-mode"
+                  checked={bulkMode}
+                  onChange={() => setBulkMode(!bulkMode)}
+                  className="mr-2"
+                />
+                <label htmlFor="bulk-mode" className="mr-2">Bulk Processing</label>
+                <span 
+                  data-tooltip-id="bulk-tooltip" 
+                  data-tooltip-content="Enable to process multiple invoices at once"
+                  className="text-blue-500 cursor-help"
+                >
+                  ℹ️
+                </span>
+                <Tooltip id="bulk-tooltip" />
+              </div>
+            </div>
             <div className="w-full p-4 border-2 border-dashed rounded-md border-gray-300">
               <input
                 type="file"
@@ -98,40 +117,43 @@ const handleProcess = async () => {
                 id="file-upload"
                 accept=".pdf,image/*"
                 onChange={handleFileChange}
+                multiple={bulkMode}
               />
               <label
                 htmlFor="file-upload"
                 className="flex flex-col items-center justify-center h-32 cursor-pointer"
               >
-                <span className="text-gray-500">Drag and drop invoice file</span>
+                <span className="text-gray-500">Drag and drop invoice file{bulkMode ? 's' : ''}</span>
                 <button className="px-4 py-2 mt-4 text-white bg-gray-800 rounded-md hover:bg-gray-700" onClick={() => document.getElementById('file-upload').click()}>
                   Browse
                 </button>
               </label>
             </div>
-            {file && (
+            {files.length > 0 && (
               <div className="w-full mt-4">
-                <div className="flex items-center justify-between p-4 bg-gray-100 rounded-md">
-                  <div>
-                    <p className="text-gray-700">{file.name}</p>
-                    <p className="text-sm text-gray-500">Size: {(file.size / 1024 / 1024).toFixed(1)}MB, Type: {file.type}</p>
-                  </div>
-                  <div className="flex space-x-4">
+                {files.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-100 rounded-md mb-2">
+                    <div>
+                      <p className="text-gray-700">{file.name}</p>
+                      <p className="text-sm text-gray-500">Size: {(file.size / 1024 / 1024).toFixed(1)}MB, Type: {file.type}</p>
+                    </div>
                     <button
                       className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                      onClick={handleRemove}
-                      disabled={processing} // Disable remove button during processing
+                      onClick={() => handleRemove(index)}
+                      disabled={processing}
                     >
                       Remove
                     </button>
-                    <button
-                      className={`px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700 ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      onClick={handleProcess}
-                      disabled={processing} // Disable process button during processing
-                    >
-                      {processing ? 'Processing...' : 'Process'}
-                    </button>
                   </div>
+                ))}
+                <div className="flex justify-end mt-4">
+                  <button
+                    className={`px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700 ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={handleProcess}
+                    disabled={processing}
+                  >
+                    {processing ? 'Processing...' : `Process ${bulkMode ? 'All' : ''}`}
+                  </button>
                 </div>
               </div>
             )}

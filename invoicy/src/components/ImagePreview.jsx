@@ -7,10 +7,6 @@ const ImagePreview = ({ files }) => {
   // ... rest of the component
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    console.log('Number of files:', files?.length || 0);
-  }, [files]);
-
   // Check if files is undefined or empty
   if (!files || files.length === 0) {
     return (
