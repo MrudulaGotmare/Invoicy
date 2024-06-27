@@ -1,9 +1,13 @@
+// UploadInvoice.jsx
 import React, { useState } from 'react';
 import Split from 'react-split';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ImagePreview from './ImagePreview';
 import { Tooltip } from 'react-tooltip';
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 function UploadInvoice() {
   const [files, setFiles] = useState([]);
@@ -40,9 +44,10 @@ function UploadInvoice() {
 
   const handleProcess = async () => {
     if (files.length === 0) return;
-
+  
     setProcessing(true);
-
+    console.log('Processing started...');
+  
     try {
       const responses = await Promise.all(files.map(file => 
         axios.post('http://127.0.0.1:5000/processInvoice', { fileName: file.name }, {
@@ -50,14 +55,22 @@ function UploadInvoice() {
           withCredentials: true,
         })
       ));
-
+  
       const processedData = responses.map(response => response.data);
       console.log('Processing responses:', processedData);
-      navigate('/invoice', { state: { invoiceData: processedData, previewFiles, bulkMode } });
+  
+      // Extract image URLs from the processed data
+      const imageUrls = processedData.flatMap(data => data.imageUrls || []);
+  
+      // Debugging statement before navigation
+      console.log('Navigating to /invoice with data:', { invoiceData: processedData, previewFiles: imageUrls, bulkMode });
+  
+      navigate('/invoice', { state: { invoiceData: processedData, previewFiles: imageUrls, bulkMode } });
     } catch (error) {
       console.error('Error processing files:', error);
     } finally {
       setProcessing(false);
+      console.log('Processing ended.');
     }
   };
 

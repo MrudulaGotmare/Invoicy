@@ -1,10 +1,9 @@
-// ImagePreview.jsx
-
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import '@react-pdf-viewer/core/lib/styles/index.css';
 
 const ImagePreview = ({ files }) => {
   console.log('Files received in ImagePreview:', files);
-  // ... rest of the component
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Check if files is undefined or empty
@@ -28,14 +27,24 @@ const ImagePreview = ({ files }) => {
     }
   };
 
+  const isPDF = files[currentIndex].endsWith('.pdf');
+
   return (
     <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md">
-      <img
-        src={files[currentIndex]}
-        alt={`preview-${currentIndex}`}
-        className="w-full h-auto"
-        style={{ maxWidth: '1200px', maxHeight: '1200px', objectFit: 'cover' }}
-      />
+      {isPDF ? (
+        <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+          <div className="w-full h-full" style={{ height: '600px' }}>
+            <Viewer fileUrl={files[currentIndex]} />
+          </div>
+        </Worker>
+      ) : (
+        <img
+          src={files[currentIndex]}
+          alt={`preview-${currentIndex}`}
+          className="w-full h-auto"
+          style={{ maxWidth: '1200px', maxHeight: '1200px', objectFit: 'cover' }}
+        />
+      )}
       {files.length > 1 && (
         <div className="flex justify-between items-center mt-4 space-x-4">
           <button
