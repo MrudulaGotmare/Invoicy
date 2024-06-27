@@ -1,51 +1,84 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 function UIOutput({ invoiceData = {} }) {
-  const [isEditing, setIsEditing] = useState(false); // State to track edit mode
-  const [editedData, setEditedData] = useState({}); // State to store edited data
-  const [currentInvoiceData, setCurrentInvoiceData] = useState({}); // State to hold current invoice data
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedInvoiceData, setEditedInvoiceData] = useState({});
 
-  useEffect(() => {
-    // Set current invoice data when invoiceData prop changes
-    setCurrentInvoiceData(invoiceData[0] || {});
-  }, [invoiceData]);
+  const {
+    buyerName = '',
+    documentType = '',
+    paymentTerms = '',
+    invoiceDate = '',
+    invoiceNumber = '',
+    irnNumber = '',
+    poNumber = '',
+    sellerName = '',
+    shippingAddress = '',
+    shippingGstin = '',
+    shippingToLegalName = '',
+    cgst = 0,
+    igst = 0,
+    invoiceTotalAmount = 0,
+    totalAmountPreTax = 0,
+    paymentDueDate = '',
+    preTaxTotal = 0,
+    roundOff = 0,
+    sgst = 0,
+    ugst = 0,
+    tcs = 0,
+    totalTax = 0,
+    discount = 0,
+    currency = '',
+    items = [],
+    hsnOrSacCodesWithItemNames = [],
+    billPeriod = '',
+    accountNumber = '',
+    ifscCode = '',
+    bank = '',
+    swiftCode = '',
+    branch = ''
+  } = invoiceData[0] || {};
 
-  // Function to handle input changes and update editedData
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setEditedData({
-      ...editedData,
+    setEditedInvoiceData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
   };
 
-  // Function to toggle edit mode
   const toggleEditMode = () => {
     setIsEditing(!isEditing);
+    if (!isEditing) {
+      setEditedInvoiceData(invoiceData[0] || {});
+    }
   };
 
-  // Function to save changes
   const saveChanges = () => {
-    // Merge editedData into currentInvoiceData
-    const updatedInvoiceData = {
-      ...currentInvoiceData,
-      ...editedData
-    };
+    // Here you would typically update the backend or parent component state
+    console.log('Saving changes:', editedInvoiceData);
+    // For this example, we'll just update our local state
+    invoiceData[0] = { ...invoiceData[0], ...editedInvoiceData };
+    setIsEditing(false);
+  };
 
-    // Perform logic to save updatedInvoiceData (e.g., API call, state update)
-    console.log('Saving changes:', updatedInvoiceData);
-    // Example: Update invoiceData state or perform API call to save changes
-    // updateInvoiceData(updatedInvoiceData);
-    setCurrentInvoiceData(updatedInvoiceData); // Update currentInvoiceData state
-    setIsEditing(false); // Exit edit mode after saving
+  const formatCurrency = (value) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? '0.00' : num.toFixed(2);
+  };
+
+  const getValue = (key) => {
+    return isEditing ? editedInvoiceData[key] : invoiceData[0]?.[key];
   };
 
   return (
     <>
-      <div className="flex justify-between w-full mb-8">
-        <h1 className="text-3xl font-bold">{currentInvoiceData.invoiceNumber}</h1>
+      <div className="flex justify-between w-full 
+      name= ''mb-8">
+        <h1 className="text-3xl font-bold">{invoiceNumber}</h1>
       </div>
-      <div className="w-full mb-8">
+      <div className="w-full 
+      name= ''mb-8">
         <h2 className="text-xl font-semibold">Details</h2>
         <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
           <div>
@@ -54,8 +87,8 @@ function UIOutput({ invoiceData = {} }) {
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
               name="buyerName"
-              value={isEditing ? (editedData.buyerName || currentInvoiceData.buyerName) : currentInvoiceData.buyerName}
-              readOnly={!isEditing} // Toggle readOnly based on isEditing state
+              value={getValue('buyerName') || 'Information not provided'}
+              readOnly={!isEditing}
               onChange={handleChange}
             />
           </div>
@@ -64,44 +97,50 @@ function UIOutput({ invoiceData = {} }) {
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={documentType}
-              readOnly
-            />
+              name='documentType'
+              value={getValue('documentType') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Payment Terms</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={paymentTerms}
-              readOnly
-            />
+              name= 'paymentTerms'
+              value={getValue('paymentTerms') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Invoice Date</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={invoiceDate}
-              readOnly
-            />
+              name= 'invoiceDate'
+              value={getValue('invoiceDate') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Payment Due Date</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={paymentDueDate}
-              readOnly
-            />
+              name= 'paymentDueDate'
+              value={getValue('paymentDueDate') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">PO Number</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={poNumber}
-              readOnly
+              name= 'poNumber'
+              value={getValue('poNumber') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange}
             />
           </div>
           <div>
@@ -109,205 +148,229 @@ function UIOutput({ invoiceData = {} }) {
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={sellerName}
-              readOnly
-            />
+              name= 'sellerName'
+              value={getValue('sellerName') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Shipping Address</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={shippingAddress}
-              readOnly
-            />
+              name= 'shippingAddress'
+              value={getValue('shippingAddress') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Shipping GSTIN</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={shippingGstin}
-              readOnly
-            />
+              name= 'shippingGstin'
+              value={getValue('shippingGstin') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Shipping To Legal Name</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={shippingToLegalName}
-              readOnly
-            />
+              name= 'shippingToLegalName'
+              value={getValue('shippingToLegalName') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">CGST</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={cgst}
-              readOnly
-            />
+              name= 'cgst'
+              value={getValue('cgst') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">IGST</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={igst}
-              readOnly
-            />
+              name= 'igst'
+              value={getValue('igst') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Invoice Total Amount</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={invoiceTotalAmount}
-              readOnly
-            />
+              name= 'invoiceTotalAmount'
+              value={getValue('invoiceTotalAmount') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Total Amount Pre Tax</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={totalAmountPreTax}
-              readOnly
-            />
+              name= 'totalAmountPreTax'
+              value={getValue('totalAmountPreTax') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Pre Tax Total</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={preTaxTotal}
-              readOnly
-            />
+              name= 'preTaxTotal'
+              value={getValue('preTaxTotal') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Round Off</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={roundOff}
-              readOnly
-            />
+              name= 'roundOff'
+              value={getValue('roundOff') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">SGST</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={sgst}
-              readOnly
-            />
+              name= 'sgst'
+              value={getValue('sgst') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">UGST</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={ugst}
-              readOnly
-            />
+              name= 'ugst'
+              value={getValue('ugst') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">TCS</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={tcs}
-              readOnly
-            />
+              name= 'tcs'
+              value={getValue('tcs') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Total Tax</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={totalTax}
-              readOnly
-            />
+              name= 'totalTax'
+              value={getValue('totalTax') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Discount</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={discount}
-              readOnly
-            />
+              name= 'discount'
+              value={getValue('discount') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Currency</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={currency}
-              readOnly
-            />
+              name= 'currency'
+              value={getValue('currency') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Bill Period</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={billPeriod}
-              readOnly
-            />
+              name= 'billPeriod'
+              value={getValue('billPeriod') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Account Number</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={accountNumber}
-              readOnly
-            />
+              name= 'accountNumber'
+              value={getValue('accountNumber') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">IFSC Code</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={ifscCode}
-              readOnly
-            />
+              name= 'ifscCode'
+              value={getValue('ifscCode') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Bank</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={bank}
-              readOnly
-            />
+              name= 'bank'
+              value={getValue('bank') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">SWIFT Code</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={swiftCode}
-              readOnly
-            />
+              name= 'swiftCode'
+              value={getValue('swiftCode') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
           <div>
             <label className="block mb-1 font-medium">Branch</label>
             <input
               type="text"
               className="p-2 border border-gray-300 rounded-md w-full"
-              value={branch}
-              readOnly
-            />
+              name= 'branch'
+              value={getValue('branch') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange} />
           </div>
         </form>
       </div>
 
-      <div className="w-full mb-8">
+      <div className="w-full 
+      name= ''mb-8">
         <h2 className="text-xl font-semibold">Items</h2>
-        <table className="w-full mt-4 border border-gray-300 rounded-md">
+        <table className="w-full 
+        name= ''mt-4 border border-gray-300 rounded-md">
           <thead>
             <tr className="bg-gray-100">
               <th className="p-2 border border-gray-300">Description</th>
@@ -333,19 +396,19 @@ function UIOutput({ invoiceData = {} }) {
         <div className="flex flex-col space-y-2 mt-4">
           <div className="flex justify-between">
             <span>Discount</span>
-            <span>-${discount.toFixed(2)}</span>
+            <span>-${formatCurrency(discount)}</span>
           </div>
           <div className="flex justify-between">
             <span>Total Tax</span>
-            <span>${totalTax.toFixed(2)}</span>
+            <span>${formatCurrency(totalTax)}</span>
           </div>
           <div className="flex justify-between">
             <span>Total Amount Pre Tax</span>
-            <span>${totalAmountPreTax.toFixed(2)}</span>
+            <span>${formatCurrency(totalAmountPreTax)}</span>
           </div>
           <div className="flex justify-between">
             <span>Invoice Total Amount</span>
-            <span>${invoiceTotalAmount.toFixed(2)}</span>
+            <span>${formatCurrency(invoiceTotalAmount)}</span>
           </div>
         </div>
       </div>
