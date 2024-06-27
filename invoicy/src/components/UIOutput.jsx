@@ -409,8 +409,8 @@ function UIOutput({ invoiceData = {} }) {
               <th className="p-2 border border-gray-300">Item Name</th>
               <th className="p-2 border border-gray-300">HSN/SAC Code</th>
               <th className="p-2 border border-gray-300">Quantity</th>
-              <th className="p-2 border border-gray-300">Rate</th>
-              <th className="p-2 border border-gray-300">Total</th>
+              <th className="p-2 border border-gray-300">Unit Price</th>
+              <th className="p-2 border border-gray-300">Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -419,8 +419,8 @@ function UIOutput({ invoiceData = {} }) {
                 <td className="p-2 border border-gray-300">{item.description || 'Information not provided'}</td>
                 <td className="p-2 border border-gray-300">{item.hsnOrSacCode || 'Information not provided'}</td>
                 <td className="p-2 border border-gray-300">{item.quantity || 'Information not provided'}</td>
-                <td className="p-2 border border-gray-300">{formatCurrency(item.rate) || 'Information not provided'}</td>
-                <td className="p-2 border border-gray-300">{formatCurrency(item.total) || 'Information not provided'}</td>
+                <td className="p-2 border border-gray-300">{formatCurrency(item.pricePerUnit) || 'Information not provided'}</td>
+                <td className="p-2 border border-gray-300">{formatCurrency(item.amount) || 'Information not provided'}</td>
               </tr>
             ))}
           </tbody>
@@ -434,6 +434,27 @@ function UIOutput({ invoiceData = {} }) {
           ))}
         </ul>
       </div> */}
+      <div className="w-full mb-8">
+        <h2 className="text-xl font-semibold">Invoice Summary</h2>
+        <div className="flex flex-col space-y-2 mt-4">
+          <div className="flex justify-between">
+            <span>Discount</span>
+            <span>-${formatCurrency(discount)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Total Tax</span>
+            <span>${formatCurrency(totalTax)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Total Amount Pre Tax</span>
+            <span>${formatCurrency(totalAmountPreTax)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Invoice Total Amount</span>
+            <span>${formatCurrency(invoiceTotalAmount)}</span>
+          </div>
+        </div>
+      </div>
       <div className="flex justify-end w-full mt-8">
         {isEditing ? (
           <>

@@ -1,11 +1,10 @@
-// Invoice.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Split from 'react-split';
 import UIOutput from './UIOutput';
 import JSONOutput from './JSONOutput';
 import ImagePreview from './ImagePreview';
-import xangarsLogo from '../../public/images/xangars_logo.png'; // Replace with actual path
+import xangarsLogo from '../assets/xangars_logo.png'; // Replace with actual path
 
 function Invoice() {
   const [view, setView] = useState('JSON');
@@ -28,13 +27,14 @@ function Invoice() {
     if (previewFiles.length > 0) {
       const firstPreviewFile = previewFiles[0];
       const extension = getFileExtension(firstPreviewFile);
-      setFileExtension(extension);
+      setFileExtension(extension.toLowerCase()); // Ensure extension is lower case for consistency
     }
   }, [previewFiles]);
 
   // Determine if the file is PDF or single image based on file extension
+  console.log(fileExtension);
   const isPDF = fileExtension === 'pdf';
-  const isSingleImage = fileExtension.startsWith('image/');
+  const isSingleImage = fileExtension === 'jpg' || fileExtension === 'jpeg' || fileExtension === 'png';
 
   // Extract and parse the structured data based on file type
   const structuredData = invoiceData.map(data => {
@@ -55,7 +55,8 @@ function Invoice() {
     return {
       ...parsedData,
       token_usage: data?.token_usage || {},
-      avg_confidence: data.avg_confidence || 0
+      avg_confidence: data.avg_confidence || 0,
+      total_cost_inr: data.total_cost_inr || 0 // Add total_cost_inr here
     };
   });
 

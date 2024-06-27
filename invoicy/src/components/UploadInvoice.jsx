@@ -8,7 +8,7 @@ import { Tooltip } from 'react-tooltip';
 import { Worker, Viewer } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import xangarsLogo from '../../public/images/xangars_logo.png'; // Replace with actual path
+import xangarsLogo from '../assets/xangars_logo.png';// Replace with actual path
 
 
 const BulkProcessingToggle = ({ bulkMode, setBulkMode }) => {
