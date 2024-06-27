@@ -9,6 +9,43 @@ import { Worker, Viewer } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
+const BulkProcessingToggle = ({ bulkMode, setBulkMode }) => {
+  const handleToggle = () => {
+    setBulkMode(prevMode => !prevMode);
+  };
+
+  return (
+    <div className="flex items-center space-x-3">
+      <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+        <input
+          type="checkbox"
+          id="bulk-processing"
+          checked={bulkMode}
+          onChange={handleToggle}
+          className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-transform duration-200 ease-in-out"
+        />
+        <label
+          htmlFor="bulk-processing"
+          className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+        ></label>
+      </div>
+      <label htmlFor="bulk-processing" className="text-sm font-medium text-gray-700">
+        Bulk Processing
+      </label>
+      <span 
+        data-tooltip-id="bulk-tooltip" 
+        data-tooltip-content="Enable to process multiple invoices at once"
+        className="text-gray-400 hover:text-gray-600 cursor-help transition-colors duration-200"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </span>
+      <Tooltip id="bulk-tooltip" className="text-sm bg-gray-800 text-white px-2 py-1 rounded shadow-lg" />
+    </div>
+  );
+};
+
 function UploadInvoice() {
   const [files, setFiles] = useState([]);
   const [previewFiles, setPreviewFiles] = useState([]);
@@ -105,22 +142,7 @@ function UploadInvoice() {
             <h1 className="mb-8 text-2xl font-bold">Upload invoice</h1>
             <div className="w-full mb-4 flex justify-between items-center">
               <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="bulk-mode"
-                  checked={bulkMode}
-                  onChange={() => setBulkMode(!bulkMode)}
-                  className="mr-2"
-                />
-                <label htmlFor="bulk-mode" className="mr-2">Bulk Processing</label>
-                <span 
-                  data-tooltip-id="bulk-tooltip" 
-                  data-tooltip-content="Enable to process multiple invoices at once"
-                  className="text-blue-500 cursor-help"
-                >
-                  ℹ️
-                </span>
-                <Tooltip id="bulk-tooltip" />
+              <BulkProcessingToggle bulkMode={bulkMode} setBulkMode={setBulkMode} />
               </div>
             </div>
             <div className="w-full p-4 border-2 border-dashed rounded-md border-gray-300">

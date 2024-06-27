@@ -5,7 +5,6 @@ import Split from 'react-split';
 import UIOutput from './UIOutput';
 import JSONOutput from './JSONOutput';
 import ImagePreview from './ImagePreview';
-import ImagePreview from './ImagePreview';
 
 function Invoice() {
   const [view, setView] = useState('JSON');

@@ -40,3 +40,19 @@
 .read-the-docs {
   color: #888;
 }
+/* In your CSS file */
+.toggle-switch {
+  @apply relative inline-block w-10 mr-2 align-middle select-none;
+}
+
+.toggle-switch-bg {
+  @apply w-10 h-6 bg-gray-300 rounded-full shadow-inner;
+}
+
+.toggle-switch-dot {
+  @apply absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-300 ease-in-out transform;
+}
+
+.toggle-switch-dot-active {
+  @apply translate-x-full bg-blue-500;
+}
