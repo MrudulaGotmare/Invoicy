@@ -13,7 +13,7 @@ const port = 5000;
 // Configure CORS to allow specific origins and credentials
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
-  credentials: true, // Enable credentials
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -32,14 +32,12 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+    cb(null, file.originalname);
   }
 });
 
-// Initialize multer with the storage configuration
 const upload = multer({ storage });
 
-// Serve static files from the uploads directory
 app.use('/uploads', express.static(uploadsDir));
 
 // Handle file uploads
@@ -62,7 +60,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     try {
       await convert(filePath, options);
-      const files = fs.readdirSync(outputDir).map(file => `http://127.0.0.1:5000/uploads/${path.basename(filePath, '.pdf')}/${file}`);
+      const files = fs.readdirSync(outputDir).map(file => `http://127.0.0.1:5000/uploads/${path.basename(file.filename, '.pdf')}/${file}`);
       res.json({ files });
     } catch (error) {
       console.error('Error converting PDF:', error);
@@ -76,28 +74,68 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 // Endpoint to process invoice using Python script
 app.post('/processInvoice', async (req, res) => {
   try {
-    const { filePath } = req.body; // Assuming filePath is sent in the request body
+    const { fileName } = req.body;
+    console.log('Processing file:', fileName);
+
+    if (!fileName) {
+      return res.status(400).json({ error: 'File name is undefined' });
+    }
+
+    const filePath = path.join(uploadsDir, fileName);
+
+    if (!fs.existsSync(filePath)) {
+      console.error('File not found:', filePath);
+      return res.status(404).json({ error: 'File not found' });
+    }
 
     const pythonProcess = spawn('python', ['d2.py', filePath]);
 
+    let pythonOutput = '';
+    let pythonError = '';
+
     pythonProcess.stdout.on('data', (data) => {
-      console.log(`stdout: ${data}`);
+      pythonOutput += data.toString();
     });
 
     pythonProcess.stderr.on('data', (data) => {
-      console.error(`stderr: ${data}`);
+      pythonError += data.toString();
+      console.error(`Python stderr: ${data}`);
     });
 
     pythonProcess.on('close', (code) => {
-      console.log(`child process exited with code ${code}`);
-      res.json({ message: 'Invoice processing completed' });
+      console.log(`Python process exited with code ${code}`);
+
+      if (code !== 0) {
+        console.error('Python script error:', pythonError);
+        return res.status(500).json({ error: 'Python script error', details: pythonError });
+      }
+
+      try {
+        // Extract the JSON data from the Python output
+        const match = pythonOutput.match(/output data: (.*)/);
+        if (match && match[1]) {
+          const outputData = JSON.parse(match[1]);
+          if (outputData.response_content) {
+            const invoiceData = JSON.parse(outputData.response_content);
+            res.json(invoiceData);
+          } else {
+            throw new Error('No response content found in output data');
+          }
+        } else {
+          throw new Error('No output data found in Python script output');
+        }
+      } catch (error) {
+        console.error('Error parsing Python script output:', error);
+        console.error('Python output:', pythonOutput);
+        res.status(500).json({ error: 'Failed to parse invoice data', details: error.message });
+      }
     });
   } catch (error) {
     console.error('Error processing invoice:', error);
-    res.status(500).json({ error: 'Failed to process invoice' });
+    res.status(500).json({ error: 'Failed to process invoice', details: error.message });
   }
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on port ${port}`);
 });

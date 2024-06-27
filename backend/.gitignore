@@ -1,3 +1,5 @@
 node_modules
 uploads
-myenv
+venv
+.env
+annotated_images

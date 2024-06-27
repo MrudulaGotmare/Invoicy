@@ -1,0 +1,8 @@
+paddleocr
+paddlepaddle
+numpy
+pdf2image
+Pillow
+openai
+reportlab
+setuptools

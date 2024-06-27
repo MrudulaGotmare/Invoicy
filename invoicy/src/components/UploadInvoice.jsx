@@ -16,7 +16,7 @@ function UploadInvoice() {
     setFile(selectedFile);
 
     const formData = new FormData();
-    formData.append('file', selectedFile);
+    formData.append('file', selectedFile); // Append selected file to FormData
 
     try {
       const response = await axios.post('http://127.0.0.1:5000/upload', formData, {
@@ -37,24 +37,28 @@ function UploadInvoice() {
     setPreviewFiles([]);
   };
 
-  // Function to handle processing the selected file
-  const handleProcess = async () => {
-    if (!file) return; // Ensure a file is selected
+ // Function to handle processing the selected file
+const handleProcess = async () => {
+  if (!file) return; // Ensure a file is selected
 
-    setProcessing(true); // Set processing status to true
+  setProcessing(true); // Set processing status to true
 
-    try {
-      const response = await axios.post('http://127.0.0.1:5000/processInvoice', { filename: file.name }, {
-        withCredentials: true,
-      });
-      console.log('Processing response:', response.data);
-      // Handle success response as per application logic
-    } catch (error) {
-      console.error('Error processing file:', error);
-    } finally {
-      setProcessing(false); // Reset processing status after completion
-    }
-  };
+  try {
+    const response = await axios.post('http://127.0.0.1:5000/processInvoice', { fileName: file.name }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    });
+
+    console.log('Processing response:', response.data);
+    // Handle success response as per application logic
+  } catch (error) {
+    console.error('Error processing file:', error);
+  } finally {
+    setProcessing(false); // Reset processing status after completion
+  }
+};
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -62,7 +66,7 @@ function UploadInvoice() {
         <nav className="flex justify-between items-center w-full max-w-screen-xl mx-auto">
           <div className="text-red-500 text-3xl font-bold">Xangars</div>
           <div className="flex items-center space-x-6">
-            <a href="/" className=" hover:text-gray-500">Home</a>
+            <a href="/" className="hover:text-gray-500">Home</a>
             <a href="#" className="font-bold hover:text-gray-500">Services</a>
             <a href="#" className="font-bold hover:text-gray-500">Pricing</a>
             <a href="#" className="font-bold hover:text-gray-500" onClick={() => navigate('/invoice')}>Docs</a>
