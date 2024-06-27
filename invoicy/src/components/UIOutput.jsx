@@ -1,4 +1,3 @@
-//UIOutput.jsx
 import React, { useState } from 'react';
 
 function UIOutput({ invoiceData = {} }) {
@@ -323,6 +322,16 @@ function UIOutput({ invoiceData = {} }) {
             />
           </div>
           <div>
+            <label className="block mb-1 font-medium">HSN/SAC Codes With Item Names</label>
+            <textarea
+              className="p-2 border border-gray-300 rounded-md w-full"
+              name="hsnOrSacCodesWithItemNames"
+              value={getValue('hsnOrSacCodesWithItemNames').join(', ') || 'Information not provided'}
+              readOnly={!isEditing}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
             <label className="block mb-1 font-medium">Bill Period</label>
             <input
               type="text"
@@ -390,73 +399,63 @@ function UIOutput({ invoiceData = {} }) {
           </div>
         </form>
       </div>
-
       <div className="w-full mb-8">
         <h2 className="text-xl font-semibold">Items</h2>
-        <table className="w-full mt-4 border border-gray-300 rounded-md">
+        <table className="min-w-full mt-4 border border-gray-300">
           <thead>
-            <tr className="bg-gray-100">
-              <th className="p-2 border border-gray-300">Description</th>
-              <th className="p-2 border border-gray-300">Qty</th>
-              <th className="p-2 border border-gray-300">Price</th>
-              <th className="p-2 border border-gray-300">Amount</th>
+            <tr>
+              <th className="p-2 border border-gray-300">Item Name</th>
+              <th className="p-2 border border-gray-300">HSN/SAC Code</th>
+              <th className="p-2 border border-gray-300">Quantity</th>
+              <th className="p-2 border border-gray-300">Rate</th>
+              <th className="p-2 border border-gray-300">Total</th>
             </tr>
           </thead>
           <tbody>
             {items.map((item, index) => (
               <tr key={index}>
-                <td className="p-2 border border-gray-300">{item.description}</td>
-                <td className="p-2 border border-gray-300">{item.quantity}</td>
-                <td className="p-2 border border-gray-300">${item.pricePerUnit.toFixed(2)}</td>
-                <td className="p-2 border border-gray-300">${(item.quantity * item.pricePerUnit).toFixed(2)}</td>
+                <td className="p-2 border border-gray-300">{item.name || 'Information not provided'}</td>
+                <td className="p-2 border border-gray-300">{item.hsnOrSacCode || 'Information not provided'}</td>
+                <td className="p-2 border border-gray-300">{item.quantity || 'Information not provided'}</td>
+                <td className="p-2 border border-gray-300">{formatCurrency(item.rate) || 'Information not provided'}</td>
+                <td className="p-2 border border-gray-300">{formatCurrency(item.total) || 'Information not provided'}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <div className="w-full mb-8">
-        <h2 className="text-xl font-semibold">Invoice Summary</h2>
-        <div className="flex flex-col space-y-2 mt-4">
-          <div className="flex justify-between">
-            <span>Discount</span>
-            <span>-${formatCurrency(discount)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Total Tax</span>
-            <span>${formatCurrency(totalTax)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Total Amount Pre Tax</span>
-            <span>${formatCurrency(totalAmountPreTax)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Invoice Total Amount</span>
-            <span>${formatCurrency(invoiceTotalAmount)}</span>
-          </div>
-        </div>
+        <h2 className="text-xl font-semibold">HSN/SAC Codes With Item Names</h2>
+        <ul className="mt-4 list-disc pl-5">
+          {hsnOrSacCodesWithItemNames.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
       </div>
-      <div className="flex space-x-4">
+      <div className="flex justify-end w-full mt-8">
         {isEditing ? (
-          <button
-            className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700"
-            onClick={saveChanges}
-          >
-            Save Changes
-          </button>
+          <>
+            <button
+              className="px-4 py-2 bg-green-500 text-white rounded-md mr-2"
+              onClick={saveChanges}
+            >
+              Save
+            </button>
+            <button
+              className="px-4 py-2 bg-gray-500 text-white rounded-md"
+              onClick={toggleEditMode}
+            >
+              Cancel
+            </button>
+          </>
         ) : (
           <button
-            className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md"
             onClick={toggleEditMode}
           >
             Edit
           </button>
         )}
-        <button className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700">
-          Export to CSV
-        </button>
-        <button className="px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700">
-          Send Invoice
-        </button>
       </div>
     </>
   );

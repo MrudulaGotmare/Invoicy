@@ -5,6 +5,7 @@ import Split from 'react-split';
 import UIOutput from './UIOutput';
 import JSONOutput from './JSONOutput';
 import ImagePreview from './ImagePreview';
+import ImagePreview from './ImagePreview';
 
 function Invoice() {
   const [view, setView] = useState('JSON');
@@ -61,6 +62,7 @@ function Invoice() {
                 </button>
               </div>
             </div>
+            {view === 'UI' ? <UIOutput invoiceData={invoiceData} /> : <JSONOutput invoiceData={invoiceData} />}
             {view === 'UI' ? <UIOutput invoiceData={invoiceData} /> : <JSONOutput invoiceData={invoiceData} />}
           </div>
           <ImagePreview files={previewFiles} />
