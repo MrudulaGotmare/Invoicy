@@ -282,9 +282,10 @@ if __name__ == "__main__":
                 "avg_confidence": avg_confidence
             }
 
-            print("Extracted Text:", extracted_text)
-            print("Structured Data:", json.dumps(structured_data, indent=2))
-            print(f"output data: {json.dumps(output_data)}")  # Ensure this line is present
+            # print("Extracted Text:", extracted_text)
+            # print("Structured Data:", json.dumps(structured_data))
+            # print(f"output data: {json.dumps(output_data)}")  # Ensure this line is present
+            print(f"output data: {json.dumps(structured_data)}")  # Ensure this line is present
     except Exception as e:
         error_info = {
             "error": str(e),

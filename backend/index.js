@@ -1,5 +1,4 @@
 // index.js
-// index.js
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -99,6 +98,7 @@ app.post('/processInvoice', async (req, res) => {
       }
 
       try {
+        // const match = pythonOutput.match(/output data: (.*)/);
         const match = pythonOutput.match(/output data: (.*)/);
         if (match && match[1]) {
           const outputData = JSON.parse(match[1]);
@@ -122,6 +122,7 @@ app.post('/processInvoice', async (req, res) => {
     res.status(500).json({ error: 'Failed to process invoice', details: error.message });
   }
 });
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

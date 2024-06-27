@@ -55,24 +55,49 @@ function UploadInvoice() {
 
   const handleFileChange = async (event) => {
     const selectedFiles = Array.from(event.target.files);
-    setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
-
-    for (const file of selectedFiles) {
+    
+    if (!bulkMode) {
+      // If bulk mode is off, only keep the last selected file
+      setFiles([selectedFiles[selectedFiles.length - 1]]);
+      setPreviewFiles([]);  // Clear previous preview files
+      
+      // Process only the single selected file
+      const file = selectedFiles[selectedFiles.length - 1];
       const formData = new FormData();
       formData.append('file', file);
-
+  
       try {
         const response = await axios.post('http://127.0.0.1:5000/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
           withCredentials: true,
         });
         console.log('Server response:', response.data);
-        setPreviewFiles(prevFiles => [...prevFiles, ...response.data.files]);
+        setPreviewFiles(response.data.files);
       } catch (error) {
         console.error('Error uploading file:', error);
       }
+    } else {
+      // Bulk mode: keep existing behavior
+      setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
+  
+      for (const file of selectedFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+  
+        try {
+          const response = await axios.post('http://127.0.0.1:5000/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true,
+          });
+          console.log('Server response:', response.data);
+          setPreviewFiles(prevFiles => [...prevFiles, ...response.data.files]);
+        } catch (error) {
+          console.error('Error uploading file:', error);
+        }
+      }
     }
   };
+
 
   const handleRemove = (index) => {
     setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
@@ -86,23 +111,28 @@ function UploadInvoice() {
     console.log('Processing started...');
   
     try {
-      const responses = await Promise.all(files.map(file => 
+      const responses = await Promise.all(files.map(file =>
         axios.post('http://127.0.0.1:5000/processInvoice', { fileName: file.name }, {
           headers: { 'Content-Type': 'application/json' },
           withCredentials: true,
         })
       ));
+
+      console.log("files given", previewFiles);
+
   
       const processedData = responses.map(response => response.data);
       console.log('Processing responses:', processedData);
   
       // Extract image URLs from the processed data
-      const imageUrls = processedData.flatMap(data => data.imageUrls || []);
+      // const imageUrls = processedData.flatMap(data => data.imageUrls || []);
+      // console.log('Image URLs:', imageUrls);
   
       // Debugging statement before navigation
-      console.log('Navigating to /invoice with data:', { invoiceData: processedData, previewFiles: imageUrls, bulkMode });
+      // console.log('Navigating to /invoice with data:', { invoiceData: processedData, previewFiles: imageUrls, bulkMode });
   
-      navigate('/invoice', { state: { invoiceData: processedData, previewFiles: imageUrls, bulkMode } });
+      // Navigate to /invoice with processed data
+      navigate('/invoice', { state: { invoiceData: processedData, previewFiles: previewFiles, bulkMode } });
     } catch (error) {
       console.error('Error processing files:', error);
     } finally {
@@ -142,7 +172,7 @@ function UploadInvoice() {
             <h1 className="mb-8 text-2xl font-bold">Upload invoice</h1>
             <div className="w-full mb-4 flex justify-between items-center">
               <div className="flex items-center">
-              <BulkProcessingToggle bulkMode={bulkMode} setBulkMode={setBulkMode} />
+              {/* <BulkProcessingToggle bulkMode={bulkMode} setBulkMode={setBulkMode} /> */}
               </div>
             </div>
             <div className="w-full p-4 border-2 border-dashed rounded-md border-gray-300">

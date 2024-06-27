@@ -5,14 +5,13 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/page-navigation/lib/styles/index.css';
 
 const ImagePreview = ({ files }) => {
-  console.log('Files received in ImagePreview:', files);
+  // console.log('Files received in ImagePreview:', files);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [numPages, setNumPages] = useState(1);
 
   const pageNavigationPluginInstance = pageNavigationPlugin();
   const { CurrentPageLabel, GoToNextPage, GoToPreviousPage } = pageNavigationPluginInstance;
 
-  // Check if files is undefined or empty
   if (!files || files.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md">
@@ -39,7 +38,7 @@ const ImagePreview = ({ files }) => {
     <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md">
       {isPDF ? (
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-          <div className="w-full h-full" style={{ height: '600px' }}>
+          <div className="w-full h-full" style={{ height: '600px', overflowX: 'auto', overflowY: 'hidden' }}>
             <Viewer
               fileUrl={files[currentIndex]}
               plugins={[pageNavigationPluginInstance]}

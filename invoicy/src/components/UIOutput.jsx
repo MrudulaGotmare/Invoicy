@@ -79,13 +79,15 @@ function UIOutput({ invoiceData = {} }) {
       <div className="w-full mb-8">
         <h2 className="text-xl font-semibold">Details</h2>
         <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+          {/* Rest of the fields */}
           <div>
             <label className="block mb-1 font-medium">Buyer Name</label>
             <input
-              type="text"
+              type='text'
               className="p-2 border border-gray-300 rounded-md w-full"
               name="buyerName"
-              value={getValue('buyerName') || 'Information not provided'}
+              // value={getValue('buyerName') || 'Information not provided'}
+              value={invoiceData[0].buyerName || 'Information not provided'}
               readOnly={!isEditing}
               onChange={handleChange}
             />
@@ -321,16 +323,16 @@ function UIOutput({ invoiceData = {} }) {
               onChange={handleChange}
             />
           </div>
-          <div>
+          {/* <div>
             <label className="block mb-1 font-medium">HSN/SAC Codes With Item Names</label>
             <textarea
               className="p-2 border border-gray-300 rounded-md w-full"
               name="hsnOrSacCodesWithItemNames"
-              value={getValue('hsnOrSacCodesWithItemNames').join(', ') || 'Information not provided'}
+              value={getValue('hsnOrSacCodesWithItemNames') || 'Information not provided'}
               readOnly={!isEditing}
               onChange={handleChange}
             />
-          </div>
+          </div> */}
           <div>
             <label className="block mb-1 font-medium">Bill Period</label>
             <input
@@ -414,7 +416,7 @@ function UIOutput({ invoiceData = {} }) {
           <tbody>
             {items.map((item, index) => (
               <tr key={index}>
-                <td className="p-2 border border-gray-300">{item.name || 'Information not provided'}</td>
+                <td className="p-2 border border-gray-300">{item.description || 'Information not provided'}</td>
                 <td className="p-2 border border-gray-300">{item.hsnOrSacCode || 'Information not provided'}</td>
                 <td className="p-2 border border-gray-300">{item.quantity || 'Information not provided'}</td>
                 <td className="p-2 border border-gray-300">{formatCurrency(item.rate) || 'Information not provided'}</td>
@@ -424,14 +426,14 @@ function UIOutput({ invoiceData = {} }) {
           </tbody>
         </table>
       </div>
-      <div className="w-full mb-8">
+      {/* <div className="w-full mb-8">
         <h2 className="text-xl font-semibold">HSN/SAC Codes With Item Names</h2>
         <ul className="mt-4 list-disc pl-5">
           {hsnOrSacCodesWithItemNames.map((item, index) => (
-            <li key={index}>{item}</li>
+            <li key={index}>{item.itemName || 'Information not provided'}</li>
           ))}
         </ul>
-      </div>
+      </div> */}
       <div className="flex justify-end w-full mt-8">
         {isEditing ? (
           <>

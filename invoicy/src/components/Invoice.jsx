@@ -12,6 +12,43 @@ function Invoice() {
   const invoiceData = location.state?.invoiceData || [];
   const previewFiles = location.state?.previewFiles || [];
 
+  // Extract and parse the structured data, token usage, and avg confidence from each invoice
+  // It is used for single image
+  const structuredData = invoiceData.map(data => {
+    let parsedData = {};
+    if (data && data.response_content) {
+      try {
+        parsedData = JSON.parse(data.response_content);
+      } catch (error) {
+        console.error('Error parsing structured data:', error);
+      }
+    }
+    return {
+      ...parsedData,
+      token_usage: data?.token_usage || {},
+      avg_confidence: data.avg_confidence || 0
+    };
+  });
+
+  // // it is used when pdf is been uploaded
+  // const structuredData = invoiceData.map(data => {
+  //   let parsedData = {};
+  //   if (data.structured_data && data.structured_data.response_content) {
+  //     try {
+  //       parsedData = JSON.parse(data.structured_data.response_content);
+  //     } catch (error) {
+  //       console.error('Error parsing structured data:', error);
+  //     }
+  //   }
+  //   return {
+  //     ...parsedData,
+  //     token_usage: data.structured_data?.token_usage || {},
+  //     avg_confidence: data.avg_confidence || 0
+  //   };
+  // });
+
+  console.log("structured data is:", structuredData);
+
   // Log the invoiceData and previewFiles to ensure they have the expected values
   console.log('Invoice Data:', invoiceData);
   console.log('Preview Files:', previewFiles);
@@ -61,8 +98,7 @@ function Invoice() {
                 </button>
               </div>
             </div>
-            {view === 'UI' ? <UIOutput invoiceData={invoiceData} /> : <JSONOutput invoiceData={invoiceData} />}
-            {view === 'UI' ? <UIOutput invoiceData={invoiceData} /> : <JSONOutput invoiceData={invoiceData} />}
+            {view === 'UI' ? <UIOutput invoiceData={structuredData} /> : <JSONOutput structuredData={structuredData} />}
           </div>
           <ImagePreview files={previewFiles} />
         </Split>
