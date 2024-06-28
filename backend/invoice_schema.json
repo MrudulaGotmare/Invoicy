@@ -25,6 +25,14 @@
       "description": "The unique identifier for the invoice.",
       "type": "string"
     },
+    "gst": {
+      "description": "Goods and Services Tax number.",
+      "type": "string"
+    },
+    "pan": {
+      "description": "Permanent Account Number.",
+      "type": "string"
+    },
     "irnNumber": {
       "description": "Invoice Reference Number.",
       "type": "string"
