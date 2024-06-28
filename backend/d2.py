@@ -24,6 +24,9 @@ def load_json_schema(schema_file: str) -> dict:
 # Load the JSON schema
 invoice_schema = load_json_schema('invoice_schema.json')
 
+def print_progress(step):
+    print(f"Progress: {step}", flush=True)
+
 # Function to try parsing dates in multiple formats
 def parse_date(date_str, reference_date=None):
     formats = ['%m/%d/%Y', '%d/%m/%Y', '%Y/%m/%d', '%Y-%m-%d']
@@ -192,13 +195,16 @@ def merge_invoice_data(extraction_results):
         data["avg_confidence"] /= data["page_count"]
 
     return merged_data
+
 # Function to process invoice images and print the final results
 def process_invoice_images(input_path, output_folder="annotated_images"):
     os.makedirs(output_folder, exist_ok=True)
 
-    if os.path.isfile(input_path):  # Single file input
+    print_progress("Extracting information")
+
+    if os.path.isfile(input_path):
         files = [input_path]
-    elif os.path.isdir(input_path):  # Directory input
+    elif os.path.isdir(input_path):
         files = [
             os.path.join(input_path, f) for f in os.listdir(input_path)
             if f.lower().endswith('.jpg') or f.lower().endswith('.png') or f.lower().endswith('.pdf')
@@ -219,6 +225,7 @@ def process_invoice_images(input_path, output_folder="annotated_images"):
             try:
                 extracted_text, annotated_image_path, avg_confidence = extract_text_from_image(file, output_folder=output_folder)
                 if extracted_text:
+                    print_progress("Collating information")
                     structured_data = process_text(extracted_text, invoice_schema)
                     extraction_results.append({
                         "file_name": os.path.basename(file),
@@ -233,6 +240,7 @@ def process_invoice_images(input_path, output_folder="annotated_images"):
                 print(f"Error processing {file}: {e}")
 
     if extraction_results:
+        print_progress("Ready to present")
         merged_data = merge_invoice_data(extraction_results)
         return merged_data
 
@@ -253,10 +261,12 @@ if __name__ == "__main__":
 
     input_path = sys.argv[1]
     try:
+        print_progress("Extracting information")
         if input_path.lower().endswith('.pdf'):
             pdf_images = pdf_to_images(input_path)
             for image_path in pdf_images:
                 extracted_text, annotated_image_path, avg_confidence = extract_text_from_image(image_path)
+                print_progress("Collating information")
                 structured_data = process_text(extracted_text, invoice_schema)
 
                 output_data = {
@@ -269,9 +279,11 @@ if __name__ == "__main__":
 
                 print("Extracted Text:", extracted_text)
                 print("Structured Data:", json.dumps(structured_data, indent=2))
-                print(f"output data: {json.dumps(output_data)}")  # Ensure this line is present
+                print_progress("Ready to present")
+                print(f"output data: {json.dumps(output_data)}")
         else:
             extracted_text, annotated_image_path, avg_confidence = extract_text_from_image(input_path)
+            print_progress("Collating information")
             structured_data = process_text(extracted_text, invoice_schema)
 
             output_data = {
@@ -282,10 +294,8 @@ if __name__ == "__main__":
                 "avg_confidence": avg_confidence
             }
 
-            # print("Extracted Text:", extracted_text)
-            # print("Structured Data:", json.dumps(structured_data))
-            # print(f"output data: {json.dumps(output_data)}")  # Ensure this line is present
-            print(f"output data: {json.dumps(structured_data)}")  # Ensure this line is present
+            print_progress("Ready to present")
+            print(f"output data: {json.dumps(structured_data)}")
     except Exception as e:
         error_info = {
             "error": str(e),
@@ -293,6 +303,7 @@ if __name__ == "__main__":
         }
         print(json.dumps(error_info), file=sys.stderr)
         sys.exit(1)
+
 # import os
 # import json
 # import sys

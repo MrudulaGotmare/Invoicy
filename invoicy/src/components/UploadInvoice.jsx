@@ -53,6 +53,7 @@ function UploadInvoice() {
   const [previewFiles, setPreviewFiles] = useState([]);
   const [processing, setProcessing] = useState(false);
   const [bulkMode, setBulkMode] = useState(false);
+  const [processingStep, setProcessingStep] = useState(null);
   const navigate = useNavigate();
 
   const handleFileChange = async (event) => {
@@ -112,6 +113,16 @@ function UploadInvoice() {
     console.log('Processing started...');
 
     try {
+      setProcessingStep('Extracting information');
+      // Simulate extraction step
+      await new Promise(resolve => setTimeout(resolve, 10000));
+
+      setProcessingStep('Collating information');
+      // Simulate collation step
+      await new Promise(resolve => setTimeout(resolve, 30000));
+
+      setProcessingStep('Ready to present');
+      // Actual processing
       const responses = await Promise.all(files.map(file =>
         axios.post('http://127.0.0.1:5000/processInvoice', { fileName: file.name }, {
           headers: { 'Content-Type': 'application/json' },
@@ -121,27 +132,19 @@ function UploadInvoice() {
 
       console.log("files given", previewFiles);
 
-
       const processedData = responses.map(response => response.data);
       console.log('Processing responses:', processedData);
 
-      // Extract image URLs from the processed data
-      // const imageUrls = processedData.flatMap(data => data.imageUrls || []);
-      // console.log('Image URLs:', imageUrls);
-
-      // Debugging statement before navigation
-      // console.log('Navigating to /invoice with data:', { invoiceData: processedData, previewFiles: imageUrls, bulkMode });
-
-      // Navigate to /invoice with processed data
       navigate('/invoice', { state: { invoiceData: processedData, previewFiles: previewFiles, bulkMode } });
     } catch (error) {
       console.error('Error processing files:', error);
+      setProcessingStep(null);
     } finally {
       setProcessing(false);
       console.log('Processing ended.');
     }
   };
-
+  
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <header className="w-full py-4 bg-white shadow">
@@ -213,6 +216,7 @@ function UploadInvoice() {
                   </div>
                 ))}
                 <div className="flex justify-end mt-4">
+                  { !processing && (
                   <button
                     className={`px-4 py-2 text-white bg-gray-800 rounded-md hover:bg-gray-700 ${processing ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={handleProcess}
@@ -220,7 +224,25 @@ function UploadInvoice() {
                   >
                     {processing ? 'Processing...' : `Process ${bulkMode ? 'All' : ''}`}
                   </button>
+                                    )}
+
                 </div>
+                {processing && (
+                  <div className="mt-4 text-center">
+                    <p className="text-lg font-semibold">{processingStep}</p>
+                    <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="bg-gray-800 h-2.5 rounded-full transition-all duration-500 ease-out"
+                        style={{
+                          width:
+                            processingStep === 'Extracting information' ? '33%' :
+                              processingStep === 'Collating information' ? '66%' :
+                                processingStep === 'Ready to present' ? '100%' : '0%'
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </main>
