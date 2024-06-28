@@ -56,3 +56,18 @@
 .toggle-switch-dot-active {
   @apply translate-x-full bg-blue-500;
 }
+
+.input-field {
+  min-width: 200px; /* Adjust as per your design */
+  width: 100%;
+  padding: 8px; /* Adjust padding as per your design */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px; /* Adjust font size as needed */
+  overflow-x: auto;
+}
+
+.table-cell {
+  min-width: 100px; /* Adjust based on your table design */
+  overflow: hidden;
+}

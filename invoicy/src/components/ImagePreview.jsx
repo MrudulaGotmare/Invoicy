@@ -5,7 +5,6 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/page-navigation/lib/styles/index.css';
 
 const ImagePreview = ({ files }) => {
-  // console.log('Files received in ImagePreview:', files);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [numPages, setNumPages] = useState(1);
 
@@ -14,7 +13,7 @@ const ImagePreview = ({ files }) => {
 
   if (!files || files.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md">
+      <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md h-full">
         <p>No preview available</p>
       </div>
     );
@@ -35,10 +34,10 @@ const ImagePreview = ({ files }) => {
   const isPDF = files[currentIndex].endsWith('.pdf');
 
   return (
-    <div className="flex flex-col items-center justify-center flex-grow w-full p-4 bg-white shadow-md rounded-md">
+    <div className="flex flex-col items-center justify-between w-full h-full p-4 bg-white shadow-md rounded-md overflow-auto">
       {isPDF ? (
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-          <div className="w-full h-full" style={{ height: '600px', overflowX: 'auto', overflowY: 'hidden' }}>
+          <div className="flex-grow w-full h-full" style={{ maxHeight: 'calc(110vh - 100px)', overflow: 'auto' }}>
             <Viewer
               fileUrl={files[currentIndex]}
               plugins={[pageNavigationPluginInstance]}
@@ -78,15 +77,16 @@ const ImagePreview = ({ files }) => {
           </div>
         </Worker>
       ) : (
-        <img
-          src={files[currentIndex]}
-          alt={`preview-${currentIndex}`}
-          className="w-full h-auto"
-          style={{ maxWidth: '1200px', maxHeight: '1200px', objectFit: 'cover' }}
-        />
+        <div className="flex-grow flex items-center justify-center w-full h-full overflow-auto">
+          <img
+            src={files[currentIndex]}
+            alt={`preview-${currentIndex}`}
+            className="max-w-full max-h-full object-contain"
+          />
+        </div>
       )}
       {files.length > 1 && (
-        <div className="flex justify-between items-center mt-4 space-x-4">
+        <div className="flex justify-between items-center mt-4 space-x-4 w-full">
           <button
             className="px-4 py-2 text-white bg-gray-600 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:bg-gray-300 disabled:cursor-not-allowed"
             onClick={handlePrevious}

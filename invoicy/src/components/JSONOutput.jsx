@@ -32,7 +32,7 @@ function JSONOutput({ structuredData }) {
                 <p><strong>Total Cost (USD):</strong> ${costUSD ? costUSD.toFixed(6) : 'N/A'}</p>
                 <p><strong>Total Cost (INR):</strong> ₹{costINR ? costINR.toFixed(2) : 'N/A'}</p>
               </div>
-              <pre className="whitespace-pre-wrap break-words p-4 bg-gray-100 rounded-md">
+              <pre className="whitespace-pre-wrap break-words p-4 bg-gray-100 rounded-md overflow-auto max-h-96">
                 {JSON.stringify(data, null, 2)}
               </pre>
             </div>

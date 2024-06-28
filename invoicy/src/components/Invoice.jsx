@@ -4,7 +4,8 @@ import Split from 'react-split';
 import UIOutput from './UIOutput';
 import JSONOutput from './JSONOutput';
 import ImagePreview from './ImagePreview';
-import xangarsLogo from '../assets/xangars_logo.png'; // Replace with actual path
+import ScrollIndicator from './ScrollIndicator'; // Import the new component
+import xangarsLogo from '../assets/xangars_logo.png';
 
 function Invoice() {
   const [view, setView] = useState('JSON');
@@ -69,7 +70,7 @@ function Invoice() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="w-full py-4 bg-white shadow">
+      <header>
         <nav className="flex justify-between items-center w-full max-w-6xl mx-auto">
           <img src={xangarsLogo} alt="Xangars Logo" className="h-10" />
           <div className="flex items-center space-x-6">
@@ -83,7 +84,7 @@ function Invoice() {
       </header>
       <div className="flex flex-grow w-full h-full py-4 rounded-md">
         <Split
-          className="flex flex-grow"
+          className="flex flex-grow relative" // Add 'relative' class here
           sizes={[50, 50]}
           minSize={100}
           expandToMin={false}
@@ -115,6 +116,7 @@ function Invoice() {
             {view === 'UI' ? <UIOutput invoiceData={structuredData} /> : <JSONOutput structuredData={structuredData} />}
           </div>
           <ImagePreview files={previewFiles} />
+          <ScrollIndicator /> {/* Add the ScrollIndicator component here */}
         </Split>
       </div>
     </div>
