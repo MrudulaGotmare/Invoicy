@@ -115,7 +115,7 @@ function Invoice() {
             </div>
             {view === 'UI' ? <UIOutput invoiceData={structuredData} /> : <JSONOutput structuredData={structuredData} />}
           </div>
-          <ImagePreview files={previewFiles} />
+          <ImagePreview files={previewFiles} selectedIndex={0} />
           <ScrollIndicator /> {/* Add the ScrollIndicator component here */}
         </Split>
       </div>

@@ -4,3 +4,4 @@ myenv
 .env
 annotated_images
 pdf_images
+gptextract.txt

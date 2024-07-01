@@ -81,21 +81,22 @@ function UploadInvoice() {
   //   setPreviewFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
   // };
 
+  
   const handleProcess = async () => {
     if (files.length === 0) return;
-
+  
     setProcessing(true);
     console.log('Processing started...');
-
+  
     try {
       setProcessingStep('Extracting information');
       // Simulate extraction step
       await new Promise(resolve => setTimeout(resolve, 30000));
-
+  
       setProcessingStep('Collating information');
       // Simulate collation step
       await new Promise(resolve => setTimeout(resolve, 30000));
-
+  
       setProcessingStep('Ready to present');
       // Actual processing
       const responses = await Promise.all(files.map(file =>
@@ -104,13 +105,14 @@ function UploadInvoice() {
           withCredentials: true,
         })
       ));
-
+  
       console.log("files given", previewFiles);
-
+  
       const processedData = responses.map(response => response.data);
       console.log('Processing responses:', processedData);
-
-      navigate('/invoice', { state: { invoiceData: processedData, previewFiles: previewFiles, bulkMode } });
+  
+      // Remove the bulkMode variable from the navigation state
+      navigate('/invoice', { state: { invoiceData: processedData, previewFiles: previewFiles } });
     } catch (error) {
       console.error('Error processing files:', error);
       setProcessingStep(null);
