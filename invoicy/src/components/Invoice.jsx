@@ -70,14 +70,14 @@ function Invoice() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header>
-        <nav className="flex justify-between items-center w-full max-w-6xl mx-auto">
+      <header className="w-full py-4 bg-white shadow">
+        <nav className="flex justify-between items-center w-full max-w-screen-xl mx-auto">
           <img src={xangarsLogo} alt="Xangars Logo" className="h-10" />
           <div className="flex items-center space-x-6">
-            <a href="/" className="font-bold hover:text-gray-500">Home</a>
+            <a href="/" className="hover:text-gray-500">Home</a>
             <a href="#" className="font-bold hover:text-gray-500">Services</a>
             <a href="#" className="font-bold hover:text-gray-500">Pricing</a>
-            <a href="#" className="hover:text-gray-500">Docs</a>
+            <a href="#" className="font-bold hover:text-gray-500">Docs</a>
             <a href="#" className="font-bold hover:text-gray-500">Contact Sales</a>
           </div>
         </nav>

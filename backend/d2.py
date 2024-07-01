@@ -274,7 +274,8 @@ if __name__ == "__main__":
                     "extracted_text": extracted_text,
                     "annotated_image_path": annotated_image_path,
                     "structured_data": structured_data,
-                    "avg_confidence": avg_confidence
+                    "avg_confidence": avg_confidence,
+                    "token_usage": structured_data.get("token_usage", {})
                 }
 
                 print("Extracted Text:", extracted_text)
@@ -303,6 +304,12 @@ if __name__ == "__main__":
         }
         print(json.dumps(error_info), file=sys.stderr)
         sys.exit(1)
+
+
+
+
+
+
 
 # import os
 # import json

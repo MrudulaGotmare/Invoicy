@@ -1,42 +1,68 @@
 import React, { useState } from 'react';
+import axios from 'axios'; // Import Axios
 
 function UIOutput({ invoiceData = {} }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedInvoiceData, setEditedInvoiceData] = useState({});
   const [gstValidationStatus, setGstValidationStatus] = useState(null);
+  const [registrationDate, setRegistrationDate] = useState('');
+  const [panValidationStatus, setPanValidationStatus] = useState(null);
+
 
   const verifyGST = async (gstNumber) => {
     if (!gstNumber || gstNumber.length !== 15) {
+      console.log("GST number is invalid or not provided");
       setGstValidationStatus(null);
+      setRegistrationDate('');
       return;
     }
 
     try {
-      console.log('Verifying GST:', gstNumber); // Debugging log
-
-      const response = await fetch('https://api.invincibleocean.com/invincible/gstinSearch', {
-        method: 'POST',
+      const response = await axios.post('https://api.invincibleocean.com/invincible/gstinSearch', {
+        gstin: gstNumber
+      }, {
         headers: {
           'Content-Type': 'application/json',
           'clientId': '14c56e745f06f0bae9e9945f0f2b9256:cb04fb1d52fa2341c0e3f79a00febea1',
           'secretKey': 'l7RLs6B99J2HIcwnLqxhUx9OAVxHTtnXfjZ8iPJ9Fm1sKR03QnntPeQ3aHT9CKPGv'
-        },
-        body: JSON.stringify({ gstin: gstNumber })
+        }
       });
 
-      console.log('Response status:', response.status); // Debugging log
+      console.log('API Response:', response.data); // Debugging log
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('API Response:', data); // Debugging log
-
-      setGstValidationStatus(data.result.gstinStatus === 'ACTIVE' ? 'valid' : 'invalid');
+      setGstValidationStatus(response.data.code === 200 ? 'valid' : 'invalid');
+      setRegistrationDate(response.data.result?.result?.gstnDetailed?.registrationDate || ''); 
     } catch (error) {
       console.error('Error verifying GST:', error);
       setGstValidationStatus('error');
+      setRegistrationDate('');
+    }
+  };
+
+  const verifyPAN = async (panNumber) => {
+    if (!panNumber || panNumber.length !== 10) {
+      console.log("PAN number is invalid or not provided");
+      setPanValidationStatus(null);
+      return;
+    }
+
+    try {
+      const response = await axios.post('https://api.invincibleocean.com/invincible/panPlusV3', {
+        panNumber: panNumber
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'clientId': '14c56e745f06f0bae9e9945f0f2b9256:cb04fb1d52fa2341c0e3f79a00febea1',
+          'secretKey': 'l7RLs6B99J2HIcwnLqxhUx9OAVxHTtnXfjZ8iPJ9Fm1sKR03QnntPeQ3aHT9CKPGv'
+        }
+      });
+
+      console.log('API Response:', response.data); // Debugging log
+
+      setPanValidationStatus(response.data.code === 200 ? 'valid' : 'invalid');
+    } catch (error) {
+      console.error('Error verifying PAN:', error);
+      setPanValidationStatus('error');
     }
   };
 
@@ -56,6 +82,9 @@ function UIOutput({ invoiceData = {} }) {
 
     if (name === 'gst') {
       verifyGST(value);
+    }
+    if (name === 'pan') {
+      verifyPAN(value);
     }
   };
 
@@ -112,89 +141,108 @@ function UIOutput({ invoiceData = {} }) {
   };
 
   return (
-    <>
-      <div className="flex justify-between w-full mb-8">
-        <h1 className="text-3xl font-bold">{invoiceNumber}</h1>
-      </div>
-      <div className="w-full mb-8">
-        <h2 className="text-xl font-semibold">Details</h2>
-        <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-          <div>
-            <label className="block mb-1 font-medium">Buyer Name</label>
-            <input
-              type='text'
-              className="p-2 border border-gray-300 rounded-md w-full"
-              name="buyerName"
-              value={getValue('buyerName') || 'Information not provided'}
-              readOnly={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Document Type</label>
-            <input
-              type="text"
-              className="p-2 border border-gray-300 rounded-md w-full"
-              name="documentType"
-              value={getValue('documentType') || 'Information not provided'}
-              readOnly={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Payment Terms</label>
-            <input
-              type="text"
-              className="p-2 border border-gray-300 rounded-md w-full"
-              name="paymentTerms"
-              value={getValue('paymentTerms') || 'Information not provided'}
-              readOnly={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Invoice Number</label>
-            <input
-              type="text"
-              className="p-2 border border-gray-300 rounded-md w-full"
-              name="invoiceNumber"
-              value={getValue('invoiceNumber') || 'Information not provided'}
-              readOnly={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">GST Number</label>
-            <div className="relative">
+    <div className="h-screen overflow-y-auto p-4"> {/* Added this wrapper */}
+      <div className="max-w-6xl mx-auto"> {/* Added this container for better readability */}
+        <div className="flex justify-between w-full mb-8">
+          <h1 className="text-3xl font-bold">{invoiceData[0]?.invoiceNumber || 'Invoice Number not provided'}</h1>
+        </div>
+        <div className="w-full mb-8">
+          <h2 className="text-xl font-semibold">Details</h2>
+          <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            <div>
+              <label className="block mb-1 font-medium">Buyer Name</label>
               <input
-                type="text"
-                className={`p-2 border rounded-md w-full ${gstValidationStatus === 'valid' ? 'border-green-500' :
-                    gstValidationStatus === 'invalid' ? 'border-red-500' :
-                      'border-gray-300'
-                  }`}
-                name="gst"
-                value={getValue('gst') || ''}
+                type='text'
+                className="p-2 border border-gray-300 rounded-md w-full"
+                name="buyerName"
+                value={getValue('buyerName') || 'Information not provided'}
                 readOnly={!isEditing}
                 onChange={handleChange}
               />
-              {gstValidationStatus === 'valid' && (
-                <svg className="w-6 h-6 text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Document Type</label>
+              <input
+                type="text"
+                className="p-2 border border-gray-300 rounded-md w-full"
+                name="documentType"
+                value={getValue('documentType') || 'Information not provided'}
+                readOnly={!isEditing}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Payment Terms</label>
+              <input
+                type="text"
+                className="p-2 border border-gray-300 rounded-md w-full"
+                name="paymentTerms"
+                value={getValue('paymentTerms') || 'Information not provided'}
+                readOnly={!isEditing}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Invoice Number</label>
+              <input
+                type="text"
+                className="p-2 border border-gray-300 rounded-md w-full"
+                name="invoiceNumber"
+                value={getValue('invoiceNumber') || 'Information not provided'}
+                readOnly={!isEditing}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">GST Number</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  className={`p-2 border rounded-md w-full ${
+                    gstValidationStatus === 'valid' ? 'border-green-500' :
+                    gstValidationStatus === 'invalid' ? 'border-red-500' :
+                    'border-gray-300'
+                  }`}
+                  name="gst"
+                  value={getValue('gst') || ''}
+                  readOnly={!isEditing}
+                  onClick={() => verifyGST(getValue('gst'))} // Ensure verifyGST is called only once
+                />
+                {gstValidationStatus === 'valid' && (
+                  <svg className="w-6 h-6 text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                )}
+              </div>
+              {registrationDate && (
+                <div className="mt-2 text-sm text-gray-700">
+                  reg.dt : {registrationDate}
+                </div>
               )}
             </div>
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">PAN Number</label>
-            <input
-              type="text"
-              className="p-2 border border-gray-300 rounded-md w-full"
-              name="pan"
-              value={getValue('pan') || 'Information not provided'}
-              readOnly={!isEditing}
-              onChange={handleChange}
-            />
-          </div>
+
+            <div>
+              <label className="block mb-1 font-medium">PAN Number</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  className={`p-2 border rounded-md w-full ${
+                    panValidationStatus === 'valid' ? 'border-green-500' :
+                    panValidationStatus === 'invalid' ? 'border-red-500' :
+                    'border-gray-300'
+                  }`}
+                  name="pan"
+                  value={getValue('pan') || ''}
+                  readOnly={!isEditing}
+                  onClick={() => verifyPAN(getValue('pan'))} // Ensure verifyPAN is called only once
+                />
+                {panValidationStatus === 'valid' && (
+                  <svg className="w-6 h-6 text-green-500 absolute right-2 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                )}
+              </div>
+            </div>
           <div>
             <label className="block mb-1 font-medium">Invoice Date</label>
             <input
@@ -543,7 +591,8 @@ function UIOutput({ invoiceData = {} }) {
           </button>
         )}
       </div>
-    </>
+    </div>
+    </div>
   );
 }
 
