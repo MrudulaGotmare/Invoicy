@@ -6,6 +6,8 @@ const { spawn } = require('child_process');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const Promise = require('bluebird');
+
 
 const app = express();
 const port = 5000;
@@ -60,66 +62,69 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
 app.post('/processInvoice', async (req, res) => {
   try {
-    const { fileName } = req.body;
-    console.log('Processing file:', fileName);
+    const { fileNames } = req.body;
+    console.log('Processing files:', fileNames);
 
-    if (!fileName) {
-      return res.status(400).json({ error: 'File name is undefined' });
+    if (!fileNames || !Array.isArray(fileNames)) {
+      return res.status(400).json({ error: 'File names are undefined or not an array' });
     }
 
-    const filePath = path.join(uploadsDir, fileName);
+    const processFile = async (fileName) => {
+      const filePath = path.join(uploadsDir, fileName);
 
-    if (!fs.existsSync(filePath)) {
-      console.error('File not found:', filePath);
-      return res.status(404).json({ error: 'File not found' });
-    }
-
-    const pythonProcess = spawn('python', ['d2.py', filePath]);
-
-    let pythonOutput = '';
-    let pythonError = '';
-
-    pythonProcess.stdout.on('data', (data) => {
-      pythonOutput += data.toString();
-      console.log(`Python stdout: ${data.toString()}`);
-    });
-
-    pythonProcess.stderr.on('data', (data) => {
-      pythonError += data.toString();
-      console.error(`Python stderr: ${data.toString()}`);
-    });
-
-    pythonProcess.on('close', (code) => {
-      console.log(`Python process exited with code ${code}`);
-
-      if (code !== 0) {
-        console.error('Python script error:', pythonError);
-        return res.status(500).json({ error: 'Python script error', details: pythonError });
+      if (!fs.existsSync(filePath)) {
+        console.error('File not found:', filePath);
+        return { error: 'File not found', fileName };
       }
 
-      try {
-        // const match = pythonOutput.match(/output data: (.*)/);
-        const match = pythonOutput.match(/output data: (.*)/);
-        if (match && match[1]) {
-          const outputData = JSON.parse(match[1]);
+      return new Promise((resolve, reject) => {
+        const pythonProcess = spawn('python', ['d2.py', filePath]);
 
-          // Assuming the Python script returns the paths of the converted images
-          const imagePaths = outputData.image_paths || [];
-          const imageUrls = imagePaths.map(imagePath => `http://127.0.0.1:5000/uploads/${path.basename(imagePath)}`);
+        let pythonOutput = '';
+        let pythonError = '';
 
-          res.json({ ...outputData, imageUrls });
-        } else {
-          throw new Error('No output data found in Python script output');
-        }
-      } catch (error) {
-        console.error('Error parsing Python script output:', error);
-        console.error('Python output:', pythonOutput);
-        res.status(500).json({ error: 'Failed to parse invoice data', details: error.message });
-      }
-    });
+        pythonProcess.stdout.on('data', (data) => {
+          pythonOutput += data.toString();
+          console.log(`Python stdout for ${fileName}: ${data.toString()}`);
+        });
+
+        pythonProcess.stderr.on('data', (data) => {
+          pythonError += data.toString();
+          console.error(`Python stderr for ${fileName}: ${data.toString()}`);
+        });
+
+        pythonProcess.on('close', (code) => {
+          console.log(`Python process for ${fileName} exited with code ${code}`);
+
+          if (code !== 0) {
+            console.error('Python script error:', pythonError);
+            reject({ error: 'Python script error', details: pythonError, fileName });
+          }
+
+          try {
+            const match = pythonOutput.match(/output data: (.*)/);
+            if (match && match[1]) {
+              const outputData = JSON.parse(match[1]);
+              const imagePaths = outputData.image_paths || [];
+              const imageUrls = imagePaths.map(imagePath => `http://127.0.0.1:5000/uploads/${path.basename(imagePath)}`);
+              resolve({ ...outputData, imageUrls, fileName });
+            } else {
+              reject({ error: 'No output data found in Python script output', fileName });
+            }
+          } catch (error) {
+            console.error('Error parsing Python script output:', error);
+            console.error('Python output:', pythonOutput);
+            reject({ error: 'Failed to parse invoice data', details: error.message, fileName });
+          }
+        });
+      });
+    };
+
+    const results = await Promise.map(fileNames, processFile, { concurrency: 4 });
+    res.json(results);
   } catch (error) {
-    console.error('Error processing invoice:', error);
-    res.status(500).json({ error: 'Failed to process invoice', details: error.message });
+    console.error('Error processing invoices:', error);
+    res.status(500).json({ error: 'Failed to process invoices', details: error.message });
   }
 });
 

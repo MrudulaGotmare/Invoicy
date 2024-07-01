@@ -8,9 +8,47 @@ import ImagePreview from './ImagePreview';
 import { Tooltip } from 'react-tooltip';
 import xangarsLogo from '../assets/xangars_logo.png';
 
+const BulkProcessingToggle = ({ bulkMode, setBulkMode }) => {
+  const handleToggle = () => {
+    setBulkMode(prevMode => !prevMode);
+  };
+
+  return (
+    <div className="flex items-center space-x-3">
+      <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+        <input
+          type="checkbox"
+          id="bulk-processing"
+          checked={bulkMode}
+          onChange={handleToggle}
+          className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-transform duration-200 ease-in-out"
+        />
+        <label
+          htmlFor="bulk-processing"
+          className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"
+        ></label>
+      </div>
+      <label htmlFor="bulk-processing" className="text-sm font-medium text-gray-700">
+        Bulk Processing
+      </label>
+      <span
+        data-tooltip-id="bulk-tooltip"
+        data-tooltip-content="Enable to process multiple invoices at once"
+        className="text-gray-400 hover:text-gray-600 cursor-help transition-colors duration-200"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </span>
+      <Tooltip id="bulk-tooltip" className="text-sm bg-gray-800 text-white px-2 py-1 rounded shadow-lg" />
+    </div>
+  );
+};
+
 function UploadInvoice() {
   const [files, setFiles] = useState([]);
   const [previewFiles, setPreviewFiles] = useState([]);
+  const [bulkMode, setBulkMode] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState(null);
   const [selectedFileIndex, setSelectedFileIndex] = useState(null);
@@ -81,7 +119,8 @@ function UploadInvoice() {
   //   setPreviewFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
   // };
 
-  
+  // console.log(files);
+
   const handleProcess = async () => {
     if (files.length === 0) return;
   
@@ -89,29 +128,25 @@ function UploadInvoice() {
     console.log('Processing started...');
   
     try {
-      setProcessingStep('Extracting information');
-      // Simulate extraction step
-      await new Promise(resolve => setTimeout(resolve, 30000));
+      // setProcessingStep('Extracting information');
+      // await new Promise(resolve => setTimeout(resolve, 30000));
   
-      setProcessingStep('Collating information');
-      // Simulate collation step
-      await new Promise(resolve => setTimeout(resolve, 30000));
+      // setProcessingStep('Collating information');
+      // await new Promise(resolve => setTimeout(resolve, 30000));
   
       setProcessingStep('Ready to present');
-      // Actual processing
-      const responses = await Promise.all(files.map(file =>
-        axios.post('http://127.0.0.1:5000/processInvoice', { fileName: file.name }, {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
-        })
-      ));
+  
+      const fileNames = files.map(file => file.name);
+      const response = await axios.post('http://127.0.0.1:5000/processInvoice', { fileNames }, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true,
+      });
   
       console.log("files given", previewFiles);
   
-      const processedData = responses.map(response => response.data);
+      const processedData = response.data;
       console.log('Processing responses:', processedData);
   
-      // Remove the bulkMode variable from the navigation state
       navigate('/invoice', { state: { invoiceData: processedData, previewFiles: previewFiles } });
     } catch (error) {
       console.error('Error processing files:', error);
@@ -121,7 +156,7 @@ function UploadInvoice() {
       console.log('Processing ended.');
     }
   };
-  
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <header className="w-full py-4 bg-white shadow">
@@ -149,6 +184,9 @@ function UploadInvoice() {
                   Browse
                 </button>
               </label>
+            </div>
+            <div className='mt-4'>
+              <BulkProcessingToggle bulkMode={bulkMode} setBulkMode={setBulkMode} />
             </div>
             {duplicateWarning && (
               <div className="w-full mt-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">

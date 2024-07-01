@@ -548,6 +548,10 @@ function UIOutput({ invoiceData = {} }) {
       <div className="w-full mb-8">
         <h2 className="text-xl font-semibold">Invoice Summary</h2>
         <div className="flex flex-col space-y-2 mt-4">
+        <div className="flex justify-between">
+            <span>Total Amount Pre Tax</span>
+            <span>${formatCurrency(totalAmountPreTax)}</span>
+          </div>
           <div className="flex justify-between">
             <span>Discount</span>
             <span>-${formatCurrency(discount)}</span>
@@ -555,10 +559,6 @@ function UIOutput({ invoiceData = {} }) {
           <div className="flex justify-between">
             <span>Total Tax</span>
             <span>${formatCurrency(totalTax)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Total Amount Pre Tax</span>
-            <span>${formatCurrency(totalAmountPreTax)}</span>
           </div>
           <div className="flex justify-between">
             <span>Invoice Total Amount</span>
